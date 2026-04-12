@@ -3,8 +3,8 @@ package yzarr.auth.model;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.annotation.CreatedDate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,6 +20,7 @@ import lombok.Data;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(updatable = false, nullable = false)
     private UUID id;
 
     @Column(nullable = false)
@@ -31,14 +32,21 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @CreatedDate
+    @CreationTimestamp
+    @Column(updatable = false, nullable = false)
     private Instant createdAt;
 
     @UpdateTimestamp
+    @Column(nullable = false)
     private Instant updatedAt;
 
+    @Column(nullable = false)
     private Role role = Role.USER;
 
+    @Column(nullable = false)
+    private boolean isEmailVerified = false;
+
+    @Column(nullable = false)
     private boolean isActive = true;
 
     public User(String email, String password) {

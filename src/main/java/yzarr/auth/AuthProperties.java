@@ -17,7 +17,11 @@ public class AuthProperties {
     private Long ShortRefreshTokenExpiryMs = 1000L * 60L * 60L;
     private Long AccessTokenExpiryMs = 1000L * 60L * 15L;
     private boolean EnableAuth = true;
+    private boolean emailVerification = false;
+
+    // if true, then email verification should also be true
     private boolean TwoFA = false;
+
     private boolean OAuth = false;
 
     // Cookie attributes
@@ -27,4 +31,6 @@ public class AuthProperties {
 
     // Must be set to something in the application.properties
     private String frontendUrl = "";
+
+    private short MinPasswordLength = 8;
 }
