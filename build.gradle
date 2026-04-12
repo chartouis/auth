@@ -39,6 +39,9 @@ dependencies {
 	testImplementation"org.springframework.boot:spring-boot-starter-test"
 	testImplementation"org.springframework.security:spring-security-test"
 
+    //FOR TESTING
+    runtimeOnly 'org.postgresql:postgresql'
+
 }
 
 tasks.named('test') {
