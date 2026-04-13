@@ -8,15 +8,15 @@ import yzarr.auth.model.AuthContext;
 @Service
 public class UserService {
 
-    private final AuthPipelineFactory factory;
     private final AuthProperties props;
+    private final AuthPipeline registerPipeline;
 
     public UserService(AuthPipelineFactory factory, AuthProperties props) {
-        this.factory = factory;
+        registerPipeline = factory.createRegister();
         this.props = props;
     }
 
     public void register(String email, String password) {
-        factory.createRegister().execute(new AuthContext(email, password, props));
+        registerPipeline.execute(new AuthContext(email, password, props));
     }
 }
