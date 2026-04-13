@@ -1,22 +1,24 @@
 package yzarr.auth.model;
 
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import yzarr.auth.AuthProperties;
 
 @Data
+@Builder
+@AllArgsConstructor
 public class AuthContext {
     private String email;
     private String password;
     private User user;
     private AuthProperties props;
+    private HttpServletResponse response;
+    @Builder.Default
     private boolean stop = false;
-
-    public AuthContext(String email, String password, AuthProperties props) {
-        this.email = email;
-        this.password = password;
-        this.props = props;
-
-    }
+    @Builder.Default
+    private boolean rememberMe = false;
 
     public AuthContext stop() {
         this.stop = true;

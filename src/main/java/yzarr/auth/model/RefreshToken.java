@@ -3,7 +3,7 @@ package yzarr.auth.model;
 import java.time.Instant;
 import java.util.UUID;
 
-import org.springframework.data.annotation.CreatedDate;
+import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -29,9 +29,18 @@ public class RefreshToken {
 
     private String tokenHash;
 
-    @CreatedDate
+    @CreationTimestamp
     private Instant issuedAt;
 
     private Instant expiresAt;
+
+    private Instant absoluteExpiry;
+
+    public RefreshToken(String tokenHash, User user, Instant expiresAt, Instant absoluteExpiry) {
+        this.user = user;
+        this.tokenHash = tokenHash;
+        this.expiresAt = expiresAt;
+        this.absoluteExpiry = absoluteExpiry;
+    }
 
 }

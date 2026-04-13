@@ -13,9 +13,10 @@ public class AuthProperties {
     private String JwtSecret = "default";
 
     // RememberMe
-    private Long RefreshTokenExpiryMs = 1000L * 60L * 60L * 24L * 30L;
-    private Long ShortRefreshTokenExpiryMs = 1000L * 60L * 60L;
-    private Long AccessTokenExpiryMs = 1000L * 60L * 15L;
+    private Long RefreshTokenExpiryMs = 1000L * 60L * 60L * 24L * 30L; // 30days
+    private Long AbsoluteExpiryMs = 1000L * 60L * 60L * 24L * 90L; // 90days
+    private Long ShortAbsoluteExpiryMs = 1000L * 60L * 60L; // 1hour
+    private Long AccessTokenExpiryMs = 1000L * 60L * 15L; // 15 minutes
     private boolean EnableAuth = true;
     private boolean emailVerification = false;
 

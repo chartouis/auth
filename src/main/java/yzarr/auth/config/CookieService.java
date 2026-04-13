@@ -23,8 +23,9 @@ public class CookieService {
         this.props = props;
     }
 
-    public void setRefreshTokenCookie(String token, HttpServletResponse response) {
-        setCookie(token, response, REFRESH_TOKEN, "/auth/refresh", props.getRefreshTokenExpiryMs() / 1000);
+    public void setRefreshTokenCookie(String token, HttpServletResponse response, boolean rememberMe) {
+        Long expiry = rememberMe ? props.getRefreshTokenExpiryMs() / 1000 : props.getShortAbsoluteExpiryMs() / 1000;
+        setCookie(token, response, REFRESH_TOKEN, "/auth/refresh", expiry);
     }
 
     public void setAccessTokenCookie(String token, HttpServletResponse response) {
