@@ -1,5 +1,6 @@
 package yzarr.auth.model;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +16,7 @@ public class AuthContext {
     private User user;
     private AuthProperties props;
     private HttpServletResponse response;
+    private HttpServletRequest request;
     @Builder.Default
     private boolean stop = false;
     @Builder.Default
