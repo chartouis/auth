@@ -3,6 +3,7 @@ package yzarr.auth.config;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import yzarr.auth.model.requests.LoginRequest;
@@ -33,9 +34,8 @@ public class Controller {
     }
 
     @PostMapping("/refresh")
-    public String refresh(@RequestBody String entity) {
-
-        return entity;
+    public void refresh(HttpServletResponse response, HttpServletRequest request) {
+        userService.refresh(response, request);
     }
 
 }

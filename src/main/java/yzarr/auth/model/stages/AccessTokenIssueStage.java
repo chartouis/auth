@@ -2,11 +2,16 @@ package yzarr.auth.model.stages;
 
 import java.util.UUID;
 
+import org.springframework.stereotype.Component;
+
+import lombok.extern.slf4j.Slf4j;
 import yzarr.auth.config.CookieService;
 import yzarr.auth.config.JwtService;
 import yzarr.auth.model.AuthContext;
 import yzarr.auth.model.AuthStage;
 
+@Component
+@Slf4j
 public class AccessTokenIssueStage implements AuthStage {
     private final CookieService cookieService;
     private final JwtService jwtService;

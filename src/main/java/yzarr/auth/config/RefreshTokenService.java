@@ -36,6 +36,8 @@ public class RefreshTokenService {
     }
 
     private String hash(String token) {
+        if (token == null)
+            return null;
         MessageDigest md;
         try {
             md = MessageDigest.getInstance("SHA-256");
@@ -76,6 +78,9 @@ public class RefreshTokenService {
      */
     public Optional<User> getUserByToken(String tokenString) {
         Optional<RefreshToken> token = repo.findByTokenHash(hash(tokenString));
+        if (token.isEmpty()) {
+            return Optional.empty();
+        }
         return Optional.of(token.get().getUser());
     }
 
