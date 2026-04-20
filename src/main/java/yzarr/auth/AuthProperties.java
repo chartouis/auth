@@ -17,6 +17,7 @@ public class AuthProperties {
     private Long AbsoluteExpiryMs = 1000L * 60L * 60L * 24L * 90L; // 90days
     private Long ShortAbsoluteExpiryMs = 1000L * 60L * 60L; // 1hour
     private Long AccessTokenExpiryMs = 1000L * 60L * 15L; // 15 minutes
+    private Long EmailVerificationTokenExpiryMs = 1000L * 60L * 60L;
     private boolean EnableAuth = true;
     private boolean emailVerification = false;
 
@@ -34,4 +35,8 @@ public class AuthProperties {
     private String frontendUrl = "";
 
     private short MinPasswordLength = 8;
+
+    // SMTP password and app name
+    private String appUsername = "default@gmail.com";
+    private String appPassword = "default";
 }

@@ -13,18 +13,24 @@ import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 import yzarr.auth.AuthProperties;
 import yzarr.auth.RefreshTokenRepo;
+import yzarr.auth.VerifcationTokenRepo;
 import yzarr.auth.model.RefreshToken;
+import yzarr.auth.model.TokenType;
 import yzarr.auth.model.User;
+import yzarr.auth.model.VerificationToken;
 
 @Service
 @Slf4j
-public class RefreshTokenService {
-    private final RefreshTokenRepo repo;
+public class TokenService {
+    private final RefreshTokenRepo refreshTokenRepo;
+    private final VerifcationTokenRepo verifcationTokenRepo;
     private final SecureRandom random;
     private final AuthProperties props;
 
-    public RefreshTokenService(RefreshTokenRepo repo, AuthProperties props) {
-        this.repo = repo;
+    public TokenService(RefreshTokenRepo refreshTokenRepo, VerifcationTokenRepo verifcationTokenRepo,
+            AuthProperties props) {
+        this.refreshTokenRepo = refreshTokenRepo;
+        this.verifcationTokenRepo = verifcationTokenRepo;
         this.random = new SecureRandom();
         this.props = props;
     }
@@ -55,7 +61,7 @@ public class RefreshTokenService {
      * 
      * @return refresh token
      */
-    public String generate(User user, boolean rememberMe) {
+    public String generateRefreshToken(User user, boolean rememberMe) {
         String tokenString = generateRandomString();
         String tokenHash = hash(tokenString);
 
@@ -66,18 +72,52 @@ public class RefreshTokenService {
                 : Instant.now().plusMillis(props.getShortAbsoluteExpiryMs());
 
         RefreshToken token = new RefreshToken(tokenHash, user, expiresAt, absoluteExpiry);
-        repo.save(token);
+        refreshTokenRepo.save(token);
         return tokenString;
     }
 
     /**
-     * returns Optional<User> object by refresh token. Hashes it automatically
+     * Generates a token for the given user.
+     * Returns the actual Verification Token, and saves its hash to db
+     * 
+     * @return verification token
+     */
+    public String generateEmailVerificationToken(User user) {
+        String tokenString = generateRandomString();
+        String tokenHash = hash(tokenString);
+        Instant expiresAt = Instant.now().plusMillis(props.getEmailVerificationTokenExpiryMs());
+        VerificationToken token = new VerificationToken(tokenHash, user, expiresAt, TokenType.EMAIL_VERIFICATION);
+        verifcationTokenRepo.save(token);
+        return tokenString;
+    }
+
+    /**
+     * returns Optional<User> object by token and type. Hashes it automatically
      * 
      * @param tokenString
+     * @param type
      * @return optional of user
      */
-    public Optional<User> getUserByToken(String tokenString) {
-        Optional<RefreshToken> token = repo.findByTokenHash(hash(tokenString));
+    public Optional<User> getUserByToken(String tokenString, TokenType type) {
+        switch (type) {
+            case REFRESH_TOKEN:
+                return getUserByTokenFromRefreshTokenRepo(tokenString);
+            case TWO_FACTOR, EMAIL_VERIFICATION:
+                return getUserByTokenFromVerificationTokenRepo(tokenString);
+        }
+        return Optional.empty();
+    }
+
+    private Optional<User> getUserByTokenFromRefreshTokenRepo(String tokenString) {
+        Optional<RefreshToken> token = refreshTokenRepo.findByTokenHash(hash(tokenString));
+        if (token.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(token.get().getUser());
+    }
+
+    private Optional<User> getUserByTokenFromVerificationTokenRepo(String tokenString) {
+        Optional<VerificationToken> token = verifcationTokenRepo.findByTokenHash(hash(tokenString));
         if (token.isEmpty()) {
             return Optional.empty();
         }

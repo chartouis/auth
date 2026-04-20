@@ -2,6 +2,8 @@ package yzarr.auth.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -9,13 +11,14 @@ import org.springframework.web.filter.CorsFilter;
 import yzarr.auth.AuthProperties;
 
 import java.util.List;
+import java.util.Properties;
 
 @Configuration
-public class CorsConfig {
+public class Config {
 
     private final AuthProperties props;
 
-    public CorsConfig(AuthProperties props) {
+    public Config(AuthProperties props) {
         this.props = props;
     }
 
@@ -33,4 +36,23 @@ public class CorsConfig {
 
         return new CorsFilter(source);
     }
+
+    @Bean
+    public JavaMailSender getJavaMailSender() {
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+        mailSender.setHost("smtp.gmail.com");
+        mailSender.setPort(587);
+
+        mailSender.setUsername(props.getAppUsername());
+        mailSender.setPassword(props.getAppPassword());
+
+        Properties props = mailSender.getJavaMailProperties();
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.debug", "true");
+
+        return mailSender;
+    }
+
 }

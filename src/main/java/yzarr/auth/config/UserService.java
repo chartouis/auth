@@ -14,11 +14,13 @@ public class UserService {
     private final AuthPipeline registerPipeline;
     private final AuthPipeline loginPipeline;
     private final AuthPipeline refreshPipeline;
+    private final AuthPipeline verifyEmailPipeline;
 
     public UserService(AuthPipelineFactory factory, AuthProperties props) {
         registerPipeline = factory.createRegister();
         loginPipeline = factory.createLogin();
         refreshPipeline = factory.createRefresh();
+        this.verifyEmailPipeline = factory.createVerifyEmail();
         this.props = props;
     }
 
@@ -45,6 +47,12 @@ public class UserService {
                 .request(request)
                 .response(response)
                 .props(props)
+                .build());
+    }
+
+    public void verifyEmail(String token) {
+        verifyEmailPipeline.execute(AuthContext.builder()
+                .token(token)
                 .build());
     }
 }

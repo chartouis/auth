@@ -14,6 +14,7 @@ public class AuthContext {
     private String email;
     private String password;
     private User user;
+    private String token;
     private AuthProperties props;
     private HttpServletResponse response;
     private HttpServletRequest request;

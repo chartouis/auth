@@ -3,7 +3,7 @@ package yzarr.auth.model.stages;
 import org.springframework.stereotype.Component;
 
 import yzarr.auth.config.CookieService;
-import yzarr.auth.config.RefreshTokenService;
+import yzarr.auth.config.TokenService;
 import yzarr.auth.model.AuthContext;
 import yzarr.auth.model.AuthStage;
 
@@ -12,17 +12,17 @@ import yzarr.auth.model.AuthStage;
 @Component
 public class RefreshTokenIssueStage implements AuthStage {
 
-    private final RefreshTokenService tokenService;
+    private final TokenService tokenService;
     private final CookieService cookieService;
 
-    public RefreshTokenIssueStage(RefreshTokenService tokenService, CookieService cookieService) {
+    public RefreshTokenIssueStage(TokenService tokenService, CookieService cookieService) {
         this.tokenService = tokenService;
         this.cookieService = cookieService;
     }
 
     @Override
     public AuthContext process(AuthContext context) {
-        String token = tokenService.generate(context.getUser(), context.isRememberMe());
+        String token = tokenService.generateRefreshToken(context.getUser(), context.isRememberMe());
         cookieService.setRefreshTokenCookie(token, context.getResponse(), context.isRememberMe());
         return context;
     }

@@ -5,8 +5,10 @@ import org.springframework.stereotype.Component;
 import yzarr.auth.model.stages.AccessTokenIssueStage;
 import yzarr.auth.model.stages.AuthenticationStage;
 import yzarr.auth.model.stages.CreateAccountStage;
+import yzarr.auth.model.stages.EmailVerificationStage;
 import yzarr.auth.model.stages.RefreshTokenIssueStage;
 import yzarr.auth.model.stages.ValidEmailPasswordStage;
+import yzarr.auth.model.stages.VerifyEmailVerificationTokenStage;
 import yzarr.auth.model.stages.VerifyRefreshTokenStage;
 
 @Component
@@ -18,16 +20,22 @@ public class AuthPipelineFactory {
     private final RefreshTokenIssueStage refreshTokenIssueStage;
     private final VerifyRefreshTokenStage verifyRefreshTokenStage;
     private final AccessTokenIssueStage accessTokenIssueStage;
+    private final EmailVerificationStage emailVerificationStage;
+    private final VerifyEmailVerificationTokenStage verifyEmailVerificationTokenStage;
 
     public AuthPipelineFactory(CreateAccountStage createAccountStage, ValidEmailPasswordStage validEmailPasswordStage,
             AuthenticationStage authenticationStage, RefreshTokenIssueStage refreshTokenIssueStage,
-            VerifyRefreshTokenStage verifyRefreshTokenStage, AccessTokenIssueStage accessTokenIssueStage) {
+            VerifyRefreshTokenStage verifyRefreshTokenStage, AccessTokenIssueStage accessTokenIssueStage,
+            EmailVerificationStage emailVerificationStage,
+            VerifyEmailVerificationTokenStage verifyEmailVerificationTokenStage) {
         this.createAccountStage = createAccountStage;
         this.validEmailPasswordStage = validEmailPasswordStage;
         this.authenticationStage = authenticationStage;
         this.refreshTokenIssueStage = refreshTokenIssueStage;
         this.verifyRefreshTokenStage = verifyRefreshTokenStage;
         this.accessTokenIssueStage = accessTokenIssueStage;
+        this.emailVerificationStage = emailVerificationStage;
+        this.verifyEmailVerificationTokenStage = verifyEmailVerificationTokenStage;
     }
 
     /**
@@ -40,7 +48,8 @@ public class AuthPipelineFactory {
     public AuthPipeline createRegister() {
         return new AuthPipeline()
                 .add(validEmailPasswordStage)
-                .add(createAccountStage);
+                .add(createAccountStage)
+                .add(emailVerificationStage);
     }
 
     /**
@@ -65,4 +74,10 @@ public class AuthPipelineFactory {
                 .add(verifyRefreshTokenStage)
                 .add(accessTokenIssueStage);
     }
+
+    public AuthPipeline createVerifyEmail() {
+        return new AuthPipeline()
+                .add(verifyEmailVerificationTokenStage);
+    }
+
 }

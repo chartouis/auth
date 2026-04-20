@@ -11,6 +11,8 @@ import yzarr.auth.model.requests.RegisterRequest;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/auth")
@@ -36,6 +38,11 @@ public class Controller {
     @PostMapping("/refresh")
     public void refresh(HttpServletResponse response, HttpServletRequest request) {
         userService.refresh(response, request);
+    }
+
+    @GetMapping("/verify/email")
+    public void verifyEmail(@RequestParam("token") String token) {
+        userService.verifyEmail(token);
     }
 
 }
