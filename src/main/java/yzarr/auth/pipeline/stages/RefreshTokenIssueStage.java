@@ -1,11 +1,10 @@
-package yzarr.auth.model.stages;
+package yzarr.auth.pipeline.stages;
 
 import org.springframework.stereotype.Component;
 
-import yzarr.auth.config.CookieService;
-import yzarr.auth.config.TokenService;
-import yzarr.auth.model.AuthContext;
-import yzarr.auth.model.AuthStage;
+import yzarr.auth.pipeline.AuthContext;
+import yzarr.auth.service.CookieService;
+import yzarr.auth.service.TokenService;
 
 /* Requires User in the Context. Goes after AuthenticationStage
    Puts Refresh token in response cookies */

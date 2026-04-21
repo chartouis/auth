@@ -1,4 +1,6 @@
-package yzarr.auth.model;
+package yzarr.auth.pipeline.stages;
+
+import yzarr.auth.pipeline.AuthContext;
 
 public interface AuthStage {
 

@@ -1,4 +1,4 @@
-package yzarr.auth.model.stages;
+package yzarr.auth.pipeline.stages;
 
 import java.util.Optional;
 
@@ -6,10 +6,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
-import yzarr.auth.UserRepo;
-import yzarr.auth.model.AuthContext;
-import yzarr.auth.model.AuthStage;
 import yzarr.auth.model.User;
+import yzarr.auth.pipeline.AuthContext;
+import yzarr.auth.repo.UserRepo;
 
 /* fetches User object from repo if exists, then matches the passwords */
 @Component

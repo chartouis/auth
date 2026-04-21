@@ -1,11 +1,13 @@
-package yzarr.auth.config;
+package yzarr.auth.service;
 
 import org.springframework.stereotype.Service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import yzarr.auth.AuthProperties;
-import yzarr.auth.model.AuthContext;
+import yzarr.auth.pipeline.AuthContext;
+import yzarr.auth.pipeline.AuthPipeline;
+import yzarr.auth.pipeline.AuthPipelineFactory;
 
 @Service
 public class UserService {

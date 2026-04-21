@@ -1,16 +1,15 @@
-package yzarr.auth.model.stages;
+package yzarr.auth.pipeline.stages;
 
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
-import yzarr.auth.config.CookieService;
-import yzarr.auth.config.TokenService;
-import yzarr.auth.model.AuthContext;
-import yzarr.auth.model.AuthStage;
-import yzarr.auth.model.TokenType;
 import yzarr.auth.model.User;
+import yzarr.auth.model.enums.TokenType;
+import yzarr.auth.pipeline.AuthContext;
+import yzarr.auth.service.CookieService;
+import yzarr.auth.service.TokenService;
 
 @Component
 @Slf4j

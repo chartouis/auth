@@ -1,4 +1,4 @@
-package yzarr.auth.config;
+package yzarr.auth.service;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -12,12 +12,12 @@ import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
 import yzarr.auth.AuthProperties;
-import yzarr.auth.RefreshTokenRepo;
-import yzarr.auth.VerifcationTokenRepo;
 import yzarr.auth.model.RefreshToken;
-import yzarr.auth.model.TokenType;
 import yzarr.auth.model.User;
 import yzarr.auth.model.VerificationToken;
+import yzarr.auth.model.enums.TokenType;
+import yzarr.auth.repo.RefreshTokenRepo;
+import yzarr.auth.repo.VerifcationTokenRepo;
 
 @Service
 @Slf4j

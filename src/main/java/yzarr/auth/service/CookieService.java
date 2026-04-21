@@ -1,4 +1,4 @@
-package yzarr.auth.config;
+package yzarr.auth.service;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;

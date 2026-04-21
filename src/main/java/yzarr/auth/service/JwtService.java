@@ -1,4 +1,4 @@
-package yzarr.auth.config;
+package yzarr.auth.service;
 
 import java.util.Date;
 import java.util.HashMap;

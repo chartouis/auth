@@ -1,12 +1,11 @@
-package yzarr.auth.model.stages;
+package yzarr.auth.pipeline.stages;
 
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
-import yzarr.auth.config.MailService;
-import yzarr.auth.config.TokenService;
-import yzarr.auth.model.AuthContext;
-import yzarr.auth.model.AuthStage;
+import yzarr.auth.pipeline.AuthContext;
+import yzarr.auth.service.MailService;
+import yzarr.auth.service.TokenService;
 
 //Checks if verified. Generates token, sends it to user email as link with a param.
 @Component

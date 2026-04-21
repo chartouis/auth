@@ -1,4 +1,4 @@
-package yzarr.auth.model;
+package yzarr.auth.model.enums;
 
 public enum TokenType {
     TWO_FACTOR,

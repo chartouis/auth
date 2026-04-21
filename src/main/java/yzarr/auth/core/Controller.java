@@ -1,4 +1,4 @@
-package yzarr.auth.config;
+package yzarr.auth.core;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import yzarr.auth.model.requests.LoginRequest;
 import yzarr.auth.model.requests.RegisterRequest;
+import yzarr.auth.service.UserService;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

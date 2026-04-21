@@ -1,10 +1,9 @@
-package yzarr.auth.config;
+package yzarr.auth.pipeline;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import yzarr.auth.model.AuthContext;
-import yzarr.auth.model.AuthStage;
+import yzarr.auth.pipeline.stages.AuthStage;
 
 public class AuthPipeline {
     private List<AuthStage> stages = new ArrayList<>();

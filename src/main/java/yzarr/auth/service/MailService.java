@@ -1,4 +1,4 @@
-package yzarr.auth.config;
+package yzarr.auth.service;
 
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;

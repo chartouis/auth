@@ -1,15 +1,15 @@
-package yzarr.auth.config;
+package yzarr.auth.pipeline;
 
 import org.springframework.stereotype.Component;
 
-import yzarr.auth.model.stages.AccessTokenIssueStage;
-import yzarr.auth.model.stages.AuthenticationStage;
-import yzarr.auth.model.stages.CreateAccountStage;
-import yzarr.auth.model.stages.EmailVerificationStage;
-import yzarr.auth.model.stages.RefreshTokenIssueStage;
-import yzarr.auth.model.stages.ValidEmailPasswordStage;
-import yzarr.auth.model.stages.VerifyEmailVerificationTokenStage;
-import yzarr.auth.model.stages.VerifyRefreshTokenStage;
+import yzarr.auth.pipeline.stages.AccessTokenIssueStage;
+import yzarr.auth.pipeline.stages.AuthenticationStage;
+import yzarr.auth.pipeline.stages.CreateAccountStage;
+import yzarr.auth.pipeline.stages.EmailVerificationStage;
+import yzarr.auth.pipeline.stages.RefreshTokenIssueStage;
+import yzarr.auth.pipeline.stages.ValidEmailPasswordStage;
+import yzarr.auth.pipeline.stages.VerifyEmailVerificationTokenStage;
+import yzarr.auth.pipeline.stages.VerifyRefreshTokenStage;
 
 @Component
 public class AuthPipelineFactory {

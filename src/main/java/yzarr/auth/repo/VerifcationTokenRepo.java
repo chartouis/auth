@@ -1,4 +1,4 @@
-package yzarr.auth;
+package yzarr.auth.repo;
 
 import java.util.Optional;
 import java.util.UUID;

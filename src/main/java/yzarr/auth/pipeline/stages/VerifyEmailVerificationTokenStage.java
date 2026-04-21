@@ -1,16 +1,15 @@
-package yzarr.auth.model.stages;
+package yzarr.auth.pipeline.stages;
 
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
-import yzarr.auth.UserRepo;
-import yzarr.auth.config.TokenService;
-import yzarr.auth.model.AuthContext;
-import yzarr.auth.model.AuthStage;
-import yzarr.auth.model.TokenType;
 import yzarr.auth.model.User;
+import yzarr.auth.model.enums.TokenType;
+import yzarr.auth.pipeline.AuthContext;
+import yzarr.auth.repo.UserRepo;
+import yzarr.auth.service.TokenService;
 
 //Checks token, if exists then switches emailVerified of user to true
 @Component

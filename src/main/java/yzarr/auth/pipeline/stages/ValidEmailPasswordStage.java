@@ -1,4 +1,4 @@
-package yzarr.auth.model.stages;
+package yzarr.auth.pipeline.stages;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -6,8 +6,7 @@ import java.util.regex.Pattern;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
-import yzarr.auth.model.AuthContext;
-import yzarr.auth.model.AuthStage;
+import yzarr.auth.pipeline.AuthContext;
 
 /* Checks email and password for null, then checks password length and validates email wtih OWASP regex */
 @Component
