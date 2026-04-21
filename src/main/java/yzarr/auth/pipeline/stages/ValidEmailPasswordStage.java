@@ -6,6 +6,8 @@ import java.util.regex.Pattern;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
+import yzarr.auth.model.AuthException;
+import yzarr.auth.model.enums.ErrorCode;
 import yzarr.auth.pipeline.AuthContext;
 
 /* Checks email and password for null, then checks password length and validates email wtih OWASP regex */
@@ -17,10 +19,17 @@ public class ValidEmailPasswordStage implements AuthStage {
 
     @Override
     public AuthContext process(AuthContext context) {
-        if (!isValidEmail(context.getEmail())
-                || !isValidPassword(context.getPassword(), context.getProps().getMinPasswordLength())) {
-
-            return context.stop();
+        if (!isValidEmail(context.getEmail())) {
+            context.stop();
+            throw new AuthException(ErrorCode.INVALID_EMAIL_FORMAT);
+        }
+        if (context.getPassword().length() < context.getProps().getMinPasswordLength()) {
+            context.stop();
+            throw new AuthException(ErrorCode.PASSWORD_IS_TOO_SHORT);
+        }
+        if (!isValidPassword(context.getPassword())) {
+            context.stop();
+            throw new AuthException(ErrorCode.INVALID_CREDENTIALS);
         }
         return context;
     }
@@ -32,10 +41,8 @@ public class ValidEmailPasswordStage implements AuthStage {
         return matcher.matches();
     }
 
-    public static boolean isValidPassword(String password, short length) {
+    public static boolean isValidPassword(String password) {
         if (password == null)
-            return false;
-        if (password.length() < length)
             return false;
         for (int i = 0; i < password.length(); i++) {
             char c = password.charAt(i);
