@@ -20,15 +20,12 @@ public class ValidEmailPasswordStage implements AuthStage {
     @Override
     public AuthContext process(AuthContext context) {
         if (!isValidEmail(context.getEmail())) {
-            context.stop();
             throw new AuthException(ErrorCode.INVALID_EMAIL_FORMAT);
         }
         if (context.getPassword().length() < context.getProps().getMinPasswordLength()) {
-            context.stop();
             throw new AuthException(ErrorCode.PASSWORD_IS_TOO_SHORT);
         }
         if (!isValidPassword(context.getPassword())) {
-            context.stop();
             throw new AuthException(ErrorCode.INVALID_CREDENTIALS);
         }
         return context;

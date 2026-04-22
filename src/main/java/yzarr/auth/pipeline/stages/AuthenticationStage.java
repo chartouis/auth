@@ -29,13 +29,11 @@ public class AuthenticationStage implements AuthStage {
 
         Optional<User> ouser = repo.findByEmail(context.getEmail());
         if (ouser.isEmpty()) {
-            context.stop();
             throw new AuthException(ErrorCode.INVALID_CREDENTIALS);
         }
         context.setUser(ouser.get());
 
         if (!encoder.matches(context.getPassword(), context.getUser().getPasswordHash())) {
-            context.stop();
             throw new AuthException(ErrorCode.INVALID_CREDENTIALS);
         }
 

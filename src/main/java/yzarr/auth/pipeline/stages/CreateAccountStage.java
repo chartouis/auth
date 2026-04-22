@@ -21,7 +21,6 @@ public class CreateAccountStage implements AuthStage {
     @Override
     public AuthContext process(AuthContext context) {
         if (exists(context.getEmail())) {
-            context.stop();
             throw new AuthException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
         User user = new User(context.getEmail(), encoder.encode(context.getPassword()));
