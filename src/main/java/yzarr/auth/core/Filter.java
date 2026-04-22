@@ -4,6 +4,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import yzarr.auth.model.AuthException;
+import yzarr.auth.model.enums.ErrorCode;
 import yzarr.auth.service.CookieService;
 import yzarr.auth.service.JwtService;
 
@@ -42,17 +44,10 @@ public class Filter extends OncePerRequestFilter {
         String token = cookieService.getAccessToken(request);
 
         if (token == null) {
-            filterChain.doFilter(request, response);
-            return;
+            throw new AuthException(ErrorCode.NO_ACCESS_TOKEN);
         }
 
-        String userId;
-        try {
-            userId = jwtService.extractSubject(token);
-        } catch (Exception e) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+        String userId = jwtService.extractSubject(token);
 
         if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
@@ -69,9 +64,12 @@ public class Filter extends OncePerRequestFilter {
                         new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+                filterChain.doFilter(request, response);
+                return;
             }
         }
 
-        filterChain.doFilter(request, response);
+        throw new AuthException(ErrorCode.INVALID_ACCESS_TOKEN);
+
     }
 }

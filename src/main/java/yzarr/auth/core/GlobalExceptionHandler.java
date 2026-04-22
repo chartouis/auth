@@ -55,6 +55,78 @@ public class GlobalExceptionHandler {
                                 .path(req.getRequestURI())
                                 .build());
 
+            case EMAIL_IS_NOT_VERIFIED:
+                return ResponseEntity.status(403).body(
+                        ErrorMessage.builder()
+                                .status(403)
+                                .code(code.toString())
+                                .message("Email is not verified")
+                                .path(req.getRequestURI())
+                                .build());
+
+            case NO_REFRESH_TOKEN:
+                return ResponseEntity.status(401).body(
+                        ErrorMessage.builder()
+                                .status(401)
+                                .code(code.toString())
+                                .message("No refresh token provided")
+                                .path(req.getRequestURI())
+                                .build());
+
+            case INVALID_REFRESH_TOKEN:
+                return ResponseEntity.status(401).body(
+                        ErrorMessage.builder()
+                                .status(401)
+                                .code(code.toString())
+                                .message("Invalid refresh token")
+                                .path(req.getRequestURI())
+                                .build());
+
+            case NO_EMAIL_VERIFICATION_TOKEN:
+                return ResponseEntity.status(400).body(
+                        ErrorMessage.builder()
+                                .status(400)
+                                .code(code.toString())
+                                .message("No email verification token provided")
+                                .path(req.getRequestURI())
+                                .build());
+
+            case INVALID_EMAIL_VERIFICATION_TOKEN:
+                return ResponseEntity.status(400).body(
+                        ErrorMessage.builder()
+                                .status(400)
+                                .code(code.toString())
+                                .message("Invalid email verification token")
+                                .path(req.getRequestURI())
+                                .build());
+
+            case EMAIL_IS_ALREADY_VERIFIED:
+                return ResponseEntity.status(409).body(
+                        ErrorMessage.builder()
+                                .status(409)
+                                .code(code.toString())
+                                .message("Email is already verified")
+                                .path(req.getRequestURI())
+                                .build());
+
+            case NO_ACCESS_TOKEN:
+                return ResponseEntity.status(401).body(
+                        ErrorMessage.builder()
+                                .status(401)
+                                .code(code.toString())
+                                .message("No access token provided")
+                                .path(req.getRequestURI())
+                                .build());
+
+            case INVALID_ACCESS_TOKEN:
+                return ResponseEntity.status(401).body(
+                        ErrorMessage.builder()
+                                .status(401)
+                                .code(code.toString())
+                                .message("Invalid access token")
+                                .path(req.getRequestURI())
+                                .build());
+
             default:
                 return ResponseEntity.status(500).body(
                         ErrorMessage.builder()

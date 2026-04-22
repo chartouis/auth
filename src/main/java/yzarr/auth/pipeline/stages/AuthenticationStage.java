@@ -6,7 +6,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
+import yzarr.auth.model.AuthException;
 import yzarr.auth.model.User;
+import yzarr.auth.model.enums.ErrorCode;
 import yzarr.auth.pipeline.AuthContext;
 import yzarr.auth.repo.UserRepo;
 
@@ -27,12 +29,14 @@ public class AuthenticationStage implements AuthStage {
 
         Optional<User> ouser = repo.findByEmail(context.getEmail());
         if (ouser.isEmpty()) {
-            return context.stop();
+            context.stop();
+            throw new AuthException(ErrorCode.INVALID_CREDENTIALS);
         }
         context.setUser(ouser.get());
 
         if (!encoder.matches(context.getPassword(), context.getUser().getPasswordHash())) {
-            return context.stop();
+            context.stop();
+            throw new AuthException(ErrorCode.INVALID_CREDENTIALS);
         }
 
         return context;
