@@ -14,127 +14,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthException.class)
     public ResponseEntity<ErrorMessage> handleAuth(AuthException ex, HttpServletRequest req) {
-        return fromCode(ex.getCode(), req);
+        return build(ex.getCode(), req);
     }
 
-    private ResponseEntity<ErrorMessage> fromCode(ErrorCode code, HttpServletRequest req) {
-        switch (code) {
-            case INVALID_CREDENTIALS:
-                return ResponseEntity.status(401).body(
-                        ErrorMessage.builder()
-                                .status(401)
-                                .code(code.toString())
-                                .message("Email or Password are invalid")
-                                .path(req.getRequestURI())
-                                .build());
-
-            case PASSWORD_IS_TOO_SHORT:
-                return ResponseEntity.status(400).body(
-                        ErrorMessage.builder()
-                                .status(400)
-                                .code(code.toString())
-                                .message("Password is too short")
-                                .path(req.getRequestURI())
-                                .build());
-
-            case EMAIL_ALREADY_EXISTS:
-                return ResponseEntity.status(409).body(
-                        ErrorMessage.builder()
-                                .status(409)
-                                .code(code.toString())
-                                .message("Email already exists")
-                                .path(req.getRequestURI())
-                                .build());
-
-            case INVALID_EMAIL_FORMAT:
-                return ResponseEntity.status(400).body(
-                        ErrorMessage.builder()
-                                .status(400)
-                                .code(code.toString())
-                                .message("Invalid email format")
-                                .path(req.getRequestURI())
-                                .build());
-
-            case EMAIL_IS_NOT_VERIFIED:
-                return ResponseEntity.status(403).body(
-                        ErrorMessage.builder()
-                                .status(403)
-                                .code(code.toString())
-                                .message("Email is not verified")
-                                .path(req.getRequestURI())
-                                .build());
-
-            case NO_REFRESH_TOKEN:
-                return ResponseEntity.status(401).body(
-                        ErrorMessage.builder()
-                                .status(401)
-                                .code(code.toString())
-                                .message("No refresh token provided")
-                                .path(req.getRequestURI())
-                                .build());
-
-            case INVALID_REFRESH_TOKEN:
-                return ResponseEntity.status(401).body(
-                        ErrorMessage.builder()
-                                .status(401)
-                                .code(code.toString())
-                                .message("Invalid refresh token")
-                                .path(req.getRequestURI())
-                                .build());
-
-            case NO_EMAIL_VERIFICATION_TOKEN:
-                return ResponseEntity.status(400).body(
-                        ErrorMessage.builder()
-                                .status(400)
-                                .code(code.toString())
-                                .message("No email verification token provided")
-                                .path(req.getRequestURI())
-                                .build());
-
-            case INVALID_EMAIL_VERIFICATION_TOKEN:
-                return ResponseEntity.status(400).body(
-                        ErrorMessage.builder()
-                                .status(400)
-                                .code(code.toString())
-                                .message("Invalid email verification token")
-                                .path(req.getRequestURI())
-                                .build());
-
-            case EMAIL_IS_ALREADY_VERIFIED:
-                return ResponseEntity.status(409).body(
-                        ErrorMessage.builder()
-                                .status(409)
-                                .code(code.toString())
-                                .message("Email is already verified")
-                                .path(req.getRequestURI())
-                                .build());
-
-            case NO_ACCESS_TOKEN:
-                return ResponseEntity.status(401).body(
-                        ErrorMessage.builder()
-                                .status(401)
-                                .code(code.toString())
-                                .message("No access token provided")
-                                .path(req.getRequestURI())
-                                .build());
-
-            case INVALID_ACCESS_TOKEN:
-                return ResponseEntity.status(401).body(
-                        ErrorMessage.builder()
-                                .status(401)
-                                .code(code.toString())
-                                .message("Invalid access token")
-                                .path(req.getRequestURI())
-                                .build());
-
-            default:
-                return ResponseEntity.status(500).body(
-                        ErrorMessage.builder()
-                                .status(500)
-                                .code("UNKNOWN_ERROR")
-                                .message("Unexpected error")
-                                .path(req.getRequestURI())
-                                .build());
-        }
+    private ResponseEntity<ErrorMessage> build(ErrorCode code, HttpServletRequest req) {
+        int status = code.getStatus();
+        return ResponseEntity.status(status).body(
+                ErrorMessage.builder()
+                        .status(status)
+                        .code(code.name())
+                        .message(code.getMessage())
+                        .path(req.getRequestURI())
+                        .build());
     }
 }
