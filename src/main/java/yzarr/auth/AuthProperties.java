@@ -18,11 +18,13 @@ public class AuthProperties {
     private Long ShortAbsoluteExpiryMs = 1000L * 60L * 60L; // 1hour
     private Long AccessTokenExpiryMs = 1000L * 60L * 15L; // 15 minutes
     private Long EmailVerificationTokenExpiryMs = 1000L * 60L * 60L;
+    private Long ChallengeTokenExpiryMs = 1000L * 600L;
+    private Long TwoFactorTokenExpiryMs = 1000L * 600L;
     private boolean EnableAuth = true;
     private boolean emailVerification = false;
 
     // if true, then email verification should also be true
-    private boolean TwoFA = false;
+    private boolean TwoFa = false;
 
     private boolean OAuth = false;
 

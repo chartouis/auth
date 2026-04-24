@@ -28,7 +28,7 @@ public class EmailVerificationStage implements AuthStage {
         }
 
         String token = tokenService.generateEmailVerificationToken(context.getUser());
-        mailService.sendEmailVerificationMessage(token, context.getEmail());
+        mailService.sendEmailVerificationMessage(token, context.getEmail(), "/auth/verify/email");
         throw new AuthException(ErrorCode.EMAIL_IS_NOT_VERIFIED);
     }
 

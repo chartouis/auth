@@ -32,8 +32,8 @@ public class Controller {
     }
 
     @PostMapping("/login")
-    public void login(@RequestBody LoginRequest req, HttpServletResponse response) {
-        userService.login(req.getEmail(), req.getPassword(), req.isRememberMe(), response);
+    public void login(@RequestBody LoginRequest req, HttpServletRequest request, HttpServletResponse response) {
+        userService.login(req.getEmail(), req.getPassword(), req.isRememberMe(), request, response);
     }
 
     @PostMapping("/refresh")
@@ -44,6 +44,16 @@ public class Controller {
     @GetMapping("/verify/email")
     public void verifyEmail(@RequestParam("token") String token) {
         userService.verifyEmail(token);
+    }
+
+    @GetMapping("/verify/2fa")
+    public void verify2FA(@RequestParam("token") String token) {
+        userService.verify2fa(token);
+    }
+
+    @PostMapping("/verify/2fa/status")
+    public void check2faStatus(HttpServletRequest request, HttpServletResponse response) {
+        userService.check2faStatus(request, response);
     }
 
 }

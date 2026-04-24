@@ -5,9 +5,9 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
-import yzarr.auth.model.AuthException;
+import yzarr.auth.model.TokenException;
 import yzarr.auth.model.User;
-import yzarr.auth.model.enums.ErrorCode;
+import yzarr.auth.model.enums.TokenFailureReason;
 import yzarr.auth.model.enums.TokenType;
 import yzarr.auth.pipeline.AuthContext;
 import yzarr.auth.service.CookieService;
@@ -28,11 +28,11 @@ public class VerifyRefreshTokenStage implements AuthStage {
     public AuthContext process(AuthContext context) {
         String token = cookieService.getRefreshToken(context.getRequest());
         if (token == null) {
-            throw new AuthException(ErrorCode.NO_REFRESH_TOKEN);
+            throw new TokenException(TokenType.REFRESH_TOKEN, TokenFailureReason.MISSING);
         }
         Optional<User> user = tokenService.getUserByToken(token, TokenType.REFRESH_TOKEN);
         if (user.isEmpty()) {
-            throw new AuthException(ErrorCode.INVALID_REFRESH_TOKEN);
+            throw new TokenException(TokenType.REFRESH_TOKEN, TokenFailureReason.INVALID);
         }
         context.setUser(user.get());
         return context;

@@ -36,6 +36,16 @@ public class Filter extends OncePerRequestFilter {
     }
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+
+        return path.equals("/auth/register")
+                || path.equals("/auth/login")
+                || path.equals("/auth/refresh")
+                || path.startsWith("/auth/verify");
+    }
+
+    @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
@@ -49,27 +59,28 @@ public class Filter extends OncePerRequestFilter {
 
         String userId = jwtService.extractSubject(token);
 
-        if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (userId != null
+                && SecurityContextHolder.getContext().getAuthentication() == null
+                && jwtService.validateToken(token, userId)) {
 
-            if (jwtService.validateToken(token, userId)) {
+            UserDetails userDetails = userDetailsService.loadUserByUsername(userId);
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(userId);
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                    userDetails,
+                    null,
+                    userDetails.getAuthorities());
 
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities());
+            authToken.setDetails(
+                    new WebAuthenticationDetailsSource()
+                            .buildDetails(request));
 
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext()
+                    .setAuthentication(authToken);
 
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-                filterChain.doFilter(request, response);
-                return;
-            }
+            filterChain.doFilter(request, response);
+            return;
         }
 
         throw new AuthException(ErrorCode.INVALID_ACCESS_TOKEN);
-
     }
 }

@@ -17,20 +17,20 @@ import yzarr.auth.model.User;
 import yzarr.auth.model.VerificationToken;
 import yzarr.auth.model.enums.TokenType;
 import yzarr.auth.repo.RefreshTokenRepo;
-import yzarr.auth.repo.VerifcationTokenRepo;
+import yzarr.auth.repo.VerificationTokenRepo;
 
 @Service
 @Slf4j
 public class TokenService {
     private final RefreshTokenRepo refreshTokenRepo;
-    private final VerifcationTokenRepo verifcationTokenRepo;
+    private final VerificationTokenRepo verificationTokenRepo;
     private final SecureRandom random;
     private final AuthProperties props;
 
-    public TokenService(RefreshTokenRepo refreshTokenRepo, VerifcationTokenRepo verifcationTokenRepo,
+    public TokenService(RefreshTokenRepo refreshTokenRepo, VerificationTokenRepo verificationTokenRepo,
             AuthProperties props) {
         this.refreshTokenRepo = refreshTokenRepo;
-        this.verifcationTokenRepo = verifcationTokenRepo;
+        this.verificationTokenRepo = verificationTokenRepo;
         this.random = new SecureRandom();
         this.props = props;
     }
@@ -56,39 +56,93 @@ public class TokenService {
     }
 
     /**
-     * Generates a token for the given user.
-     * Returns the actual Refresh Token, and saves its hash to db
-     * 
-     * @return refresh token
+     * Generates a refresh token for authentication sessions.
+     * Stores only a hashed version in DB.
+     *
+     * @param user       target user
+     * @param rememberMe whether to use extended expiry
+     * @return raw refresh token (returned once, never stored)
      */
     public String generateRefreshToken(User user, boolean rememberMe) {
+
+        Instant expiresAt = Instant.now().plusMillis(
+                rememberMe
+                        ? props.getRefreshTokenExpiryMs()
+                        : props.getShortAbsoluteExpiryMs());
+
+        Instant absoluteExpiry = Instant.now().plusMillis(
+                rememberMe
+                        ? props.getAbsoluteExpiryMs()
+                        : props.getShortAbsoluteExpiryMs());
+
         String tokenString = generateRandomString();
         String tokenHash = hash(tokenString);
 
-        Instant expiresAt = rememberMe ? Instant.now().plusMillis(props.getRefreshTokenExpiryMs())
-                : Instant.now().plusMillis(props.getShortAbsoluteExpiryMs());
-
-        Instant absoluteExpiry = rememberMe ? Instant.now().plusMillis(props.getAbsoluteExpiryMs())
-                : Instant.now().plusMillis(props.getShortAbsoluteExpiryMs());
-
         RefreshToken token = new RefreshToken(tokenHash, user, expiresAt, absoluteExpiry);
         refreshTokenRepo.save(token);
+
+        return tokenString;
+    }
+
+    private String generateToken(User user,
+            TokenType type,
+            Instant expiresAt,
+            String other) {
+
+        String tokenString = generateRandomString();
+        String tokenHash = hash(tokenString);
+
+        VerificationToken token = new VerificationToken(tokenHash, user, expiresAt, type);
+        token.setOther(other);
+
+        verificationTokenRepo.save(token);
         return tokenString;
     }
 
     /**
-     * Generates a token for the given user.
-     * Returns the actual Verification Token, and saves its hash to db
-     * 
-     * @return verification token
+     * Generates an email verification token used for account activation.
+     * Stored as hash only.
+     *
+     * @param user target user
+     * @return raw verification token
      */
     public String generateEmailVerificationToken(User user) {
-        String tokenString = generateRandomString();
-        String tokenHash = hash(tokenString);
-        Instant expiresAt = Instant.now().plusMillis(props.getEmailVerificationTokenExpiryMs());
-        VerificationToken token = new VerificationToken(tokenHash, user, expiresAt, TokenType.EMAIL_VERIFICATION);
-        verifcationTokenRepo.save(token);
-        return tokenString;
+        return generateToken(
+                user,
+                TokenType.EMAIL_VERIFICATION,
+                Instant.now().plusMillis(props.getEmailVerificationTokenExpiryMs()),
+                null);
+    }
+
+    /**
+     * Generates a challenge token used in multi-step authentication flows.
+     * Links to an email verification token via the "other" field.
+     *
+     * @param user       target user
+     * @param emailToken related email verification token
+     * @return raw challenge token
+     */
+    public String generateChallengeToken(User user, String emailToken) {
+        return generateToken(
+                user,
+                TokenType.CHALLENGE,
+                Instant.now().plusMillis(props.getChallengeTokenExpiryMs()),
+                emailToken);
+    }
+
+    /**
+     * Generates a second-factor authentication token.
+     * Used for 2FA verification steps.
+     *
+     * @param user target user
+     * @return raw 2FA token
+     */
+    public String generate2FAtoken(User user) {
+        return generateToken(
+                user,
+                TokenType.TWO_FACTOR,
+                Instant.now().plusMillis(props.getTwoFactorTokenExpiryMs()),
+                null);
     }
 
     /**
@@ -102,7 +156,7 @@ public class TokenService {
         switch (type) {
             case REFRESH_TOKEN:
                 return getUserByTokenFromRefreshTokenRepo(tokenString);
-            case TWO_FACTOR, EMAIL_VERIFICATION:
+            case TWO_FACTOR, EMAIL_VERIFICATION, CHALLENGE:
                 return getUserByTokenFromVerificationTokenRepo(tokenString);
         }
         return Optional.empty();
@@ -117,11 +171,18 @@ public class TokenService {
     }
 
     private Optional<User> getUserByTokenFromVerificationTokenRepo(String tokenString) {
-        Optional<VerificationToken> token = verifcationTokenRepo.findByTokenHash(hash(tokenString));
+        Optional<VerificationToken> token = verificationTokenRepo.findByTokenHash(hash(tokenString));
         if (token.isEmpty()) {
             return Optional.empty();
         }
         return Optional.of(token.get().getUser());
     }
 
+    public Optional<VerificationToken> getVerificationTokenByOther(String other) {
+        return verificationTokenRepo.findByOther(other);
+    }
+
+    public Optional<VerificationToken> getVerificationTokenByTokenHash(String tokenString) {
+        return verificationTokenRepo.findByTokenHash(hash(tokenString));
+    }
 }

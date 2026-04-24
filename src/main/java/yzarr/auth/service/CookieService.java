@@ -18,6 +18,7 @@ public class CookieService {
 
     private static final String ACCESS_TOKEN = "access_token";
     private static final String REFRESH_TOKEN = "refresh_token";
+    private static final String CHALLENGE = "challenge";
 
     public CookieService(AuthProperties props) {
         this.props = props;
@@ -30,6 +31,10 @@ public class CookieService {
 
     public void setAccessTokenCookie(String token, HttpServletResponse response) {
         setCookie(token, response, ACCESS_TOKEN, "/api", props.getAccessTokenExpiryMs() / 1000);
+    }
+
+    public void setChallengeCookie(String token, HttpServletResponse response) {
+        setCookie(token, response, CHALLENGE, "/auth/verify/2fa/status", props.getChallengeTokenExpiryMs() / 1000);
     }
 
     public void setCookie(String jwtToken, HttpServletResponse response, String name, String path, long age) {
@@ -51,6 +56,10 @@ public class CookieService {
 
     public String getRefreshToken(HttpServletRequest request) {
         return getToken(request, REFRESH_TOKEN);
+    }
+
+    public String getChallenge(HttpServletRequest request) {
+        return getToken(request, CHALLENGE);
     }
 
     private String getToken(HttpServletRequest request, String name) {

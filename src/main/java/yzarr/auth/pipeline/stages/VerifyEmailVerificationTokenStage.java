@@ -6,8 +6,10 @@ import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 import yzarr.auth.model.AuthException;
+import yzarr.auth.model.TokenException;
 import yzarr.auth.model.User;
 import yzarr.auth.model.enums.ErrorCode;
+import yzarr.auth.model.enums.TokenFailureReason;
 import yzarr.auth.model.enums.TokenType;
 import yzarr.auth.pipeline.AuthContext;
 import yzarr.auth.repo.UserRepo;
@@ -29,11 +31,11 @@ public class VerifyEmailVerificationTokenStage implements AuthStage {
     @Override
     public AuthContext process(AuthContext context) {
         if (context.getToken() == null) {
-            throw new AuthException(ErrorCode.NO_EMAIL_VERIFICATION_TOKEN);
+            throw new TokenException(TokenType.EMAIL_VERIFICATION, TokenFailureReason.MISSING);
         }
         Optional<User> ouser = tokenService.getUserByToken(context.getToken(), TokenType.EMAIL_VERIFICATION);
         if (ouser.isEmpty()) {
-            throw new AuthException(ErrorCode.INVALID_EMAIL_VERIFICATION_TOKEN);
+            throw new TokenException(TokenType.EMAIL_VERIFICATION, TokenFailureReason.INVALID);
         }
         User user = ouser.get();
 

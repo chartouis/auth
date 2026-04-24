@@ -1,5 +1,10 @@
 package yzarr.auth.model.enums;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
 public enum ErrorCode {
 
     INVALID_CREDENTIALS(401, "Email or Password are invalid"),
@@ -13,21 +18,13 @@ public enum ErrorCode {
     INVALID_EMAIL_VERIFICATION_TOKEN(400, "Invalid email verification token"),
     EMAIL_IS_ALREADY_VERIFIED(409, "Email is already verified"),
     NO_ACCESS_TOKEN(401, "No access token provided"),
-    INVALID_ACCESS_TOKEN(401, "Invalid access token");
+    INVALID_ACCESS_TOKEN(401, "Invalid access token"),
+    PENDING(202, "Try again later"),
+    EXPIRED(400, "Token is expired"),
+    NO_TOKEN(401, "No needed token was provided"),
+    INVALID_TOKEN(401, "Provided token is invalid"),
+    TODO(500, "TODO CODE");
 
     private final int status;
     private final String message;
-
-    ErrorCode(int status, String message) {
-        this.status = status;
-        this.message = message;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public String getMessage() {
-        return message;
-    }
 }

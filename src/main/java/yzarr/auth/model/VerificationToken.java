@@ -18,6 +18,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import yzarr.auth.model.enums.Status;
 import yzarr.auth.model.enums.TokenType;
 
 @Data
@@ -47,6 +48,13 @@ public class VerificationToken {
     @Column(nullable = false, updatable = false)
     @Enumerated(EnumType.STRING)
     private TokenType type;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Status status = Status.PENDING;
+
+    @Column(nullable = true)
+    private String other;
 
     public VerificationToken(String tokenHash, User user, Instant expiresAt, TokenType type) {
         this.tokenHash = tokenHash;

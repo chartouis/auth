@@ -2,18 +2,23 @@ package yzarr.auth.pipeline;
 
 import org.springframework.stereotype.Component;
 
+import yzarr.auth.AuthProperties;
 import yzarr.auth.pipeline.stages.AccessTokenIssueStage;
 import yzarr.auth.pipeline.stages.AuthenticationStage;
+import yzarr.auth.pipeline.stages.ConsumeChallengeStage;
 import yzarr.auth.pipeline.stages.CreateAccountStage;
 import yzarr.auth.pipeline.stages.EmailVerificationStage;
 import yzarr.auth.pipeline.stages.RefreshTokenIssueStage;
+import yzarr.auth.pipeline.stages.SetChallengeAndSend2FAstage;
 import yzarr.auth.pipeline.stages.ValidEmailPasswordStage;
+import yzarr.auth.pipeline.stages.VerifyChallengeStage;
 import yzarr.auth.pipeline.stages.VerifyEmailVerificationTokenStage;
 import yzarr.auth.pipeline.stages.VerifyRefreshTokenStage;
 
 @Component
 public class AuthPipelineFactory {
 
+    private final AuthProperties authProperties;
     private final CreateAccountStage createAccountStage;
     private final ValidEmailPasswordStage validEmailPasswordStage;
     private final AuthenticationStage authenticationStage;
@@ -22,12 +27,18 @@ public class AuthPipelineFactory {
     private final AccessTokenIssueStage accessTokenIssueStage;
     private final EmailVerificationStage emailVerificationStage;
     private final VerifyEmailVerificationTokenStage verifyEmailVerificationTokenStage;
+    private final ConsumeChallengeStage consumeChallengeStage;
+    private final SetChallengeAndSend2FAstage setChallengeAndSend2FAstage;
+    private final VerifyChallengeStage verifyChallengeStage;
 
     public AuthPipelineFactory(CreateAccountStage createAccountStage, ValidEmailPasswordStage validEmailPasswordStage,
             AuthenticationStage authenticationStage, RefreshTokenIssueStage refreshTokenIssueStage,
             VerifyRefreshTokenStage verifyRefreshTokenStage, AccessTokenIssueStage accessTokenIssueStage,
             EmailVerificationStage emailVerificationStage,
-            VerifyEmailVerificationTokenStage verifyEmailVerificationTokenStage) {
+            VerifyEmailVerificationTokenStage verifyEmailVerificationTokenStage,
+            ConsumeChallengeStage consumeChallengeStage, SetChallengeAndSend2FAstage setChallengeAndSend2FAstage,
+            SetChallengeAndSend2FAstage setChallengeAndSend2FAstage2, VerifyChallengeStage verifyChallengeStage,
+            AuthProperties authProperties) {
         this.createAccountStage = createAccountStage;
         this.validEmailPasswordStage = validEmailPasswordStage;
         this.authenticationStage = authenticationStage;
@@ -36,6 +47,10 @@ public class AuthPipelineFactory {
         this.accessTokenIssueStage = accessTokenIssueStage;
         this.emailVerificationStage = emailVerificationStage;
         this.verifyEmailVerificationTokenStage = verifyEmailVerificationTokenStage;
+        this.consumeChallengeStage = consumeChallengeStage;
+        this.setChallengeAndSend2FAstage = setChallengeAndSend2FAstage2;
+        this.verifyChallengeStage = verifyChallengeStage;
+        this.authProperties = authProperties;
     }
 
     /**
@@ -63,10 +78,15 @@ public class AuthPipelineFactory {
      * 
      */
     public AuthPipeline createLogin() {
-        return new AuthPipeline()
+        AuthPipeline pipeline = new AuthPipeline()
                 .add(validEmailPasswordStage)
-                .add(authenticationStage)
-                .add(refreshTokenIssueStage);
+                .add(authenticationStage);
+        if (authProperties.isTwoFa()) {
+            pipeline.add(setChallengeAndSend2FAstage);
+        } else {
+            pipeline.add(refreshTokenIssueStage);
+        }
+        return pipeline;
     }
 
     public AuthPipeline createRefresh() {
@@ -76,8 +96,17 @@ public class AuthPipelineFactory {
     }
 
     public AuthPipeline createVerifyEmail() {
+        return new AuthPipeline().add(verifyEmailVerificationTokenStage);
+    }
+
+    public AuthPipeline createVerify2fa() {
+        return new AuthPipeline().add(verifyChallengeStage);
+    }
+
+    public AuthPipeline createCheck2faStatus() {
         return new AuthPipeline()
-                .add(verifyEmailVerificationTokenStage);
+                .add(consumeChallengeStage)
+                .add(refreshTokenIssueStage);
     }
 
 }

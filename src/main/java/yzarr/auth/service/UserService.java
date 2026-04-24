@@ -17,12 +17,16 @@ public class UserService {
     private final AuthPipeline loginPipeline;
     private final AuthPipeline refreshPipeline;
     private final AuthPipeline verifyEmailPipeline;
+    private final AuthPipeline verify2faPipeline;
+    private final AuthPipeline check2faPipeline;
 
     public UserService(AuthPipelineFactory factory, AuthProperties props) {
         registerPipeline = factory.createRegister();
         loginPipeline = factory.createLogin();
         refreshPipeline = factory.createRefresh();
-        this.verifyEmailPipeline = factory.createVerifyEmail();
+        verifyEmailPipeline = factory.createVerifyEmail();
+        verify2faPipeline = factory.createVerify2fa();
+        check2faPipeline = factory.createCheck2faStatus();
         this.props = props;
     }
 
@@ -34,12 +38,14 @@ public class UserService {
                 .build());
     }
 
-    public void login(String email, String password, boolean rememberMe, HttpServletResponse response) {
+    public void login(String email, String password, boolean rememberMe, HttpServletRequest request,
+            HttpServletResponse response) {
         loginPipeline.execute(AuthContext.builder()
                 .email(email)
                 .password(password)
                 .props(props)
                 .rememberMe(rememberMe)
+                .request(request)
                 .response(response)
                 .build());
     }
@@ -55,6 +61,22 @@ public class UserService {
     public void verifyEmail(String token) {
         verifyEmailPipeline.execute(AuthContext.builder()
                 .token(token)
+                .props(props)
+                .build());
+    }
+
+    public void verify2fa(String token) {
+        verify2faPipeline.execute(AuthContext.builder()
+                .token(token)
+                .props(props)
+                .build());
+    }
+
+    public void check2faStatus(HttpServletRequest request, HttpServletResponse response) {
+        check2faPipeline.execute(AuthContext.builder()
+                .request(request)
+                .response(response)
+                .props(props)
                 .build());
     }
 }
