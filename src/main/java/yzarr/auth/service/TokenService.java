@@ -6,15 +6,17 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Base64;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
 import yzarr.auth.AuthProperties;
 import yzarr.auth.model.RefreshToken;
+import yzarr.auth.model.TokenException;
 import yzarr.auth.model.User;
 import yzarr.auth.model.VerificationToken;
+import yzarr.auth.model.enums.Status;
+import yzarr.auth.model.enums.TokenFailureReason;
 import yzarr.auth.model.enums.TokenType;
 import yzarr.auth.repo.RefreshTokenRepo;
 import yzarr.auth.repo.VerificationTokenRepo;
@@ -26,6 +28,7 @@ public class TokenService {
     private final VerificationTokenRepo verificationTokenRepo;
     private final SecureRandom random;
     private final AuthProperties props;
+    private final MessageDigest sha256;
 
     public TokenService(RefreshTokenRepo refreshTokenRepo, VerificationTokenRepo verificationTokenRepo,
             AuthProperties props) {
@@ -33,6 +36,11 @@ public class TokenService {
         this.verificationTokenRepo = verificationTokenRepo;
         this.random = new SecureRandom();
         this.props = props;
+        try {
+            this.sha256 = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 not available", e);
+        }
     }
 
     private String generateRandomString() {
@@ -41,148 +49,147 @@ public class TokenService {
         return Base64.getEncoder().encodeToString(bytes);
     }
 
-    private String hash(String token) {
-        if (token == null)
-            return null;
-        MessageDigest md;
-        try {
-            md = MessageDigest.getInstance("SHA-256");
-            byte[] tokenHash = md.digest(token.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(tokenHash);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+    private synchronized String hash(String token) {
+        sha256.reset();
+        byte[] tokenHash = sha256.digest(token.getBytes(StandardCharsets.UTF_8));
+        return Base64.getEncoder().encodeToString(tokenHash);
+    }
+
+    // -------------------------------------------------------------------------
+    // Validated lookups — use these in stages instead of raw repo calls
+    // -------------------------------------------------------------------------
+
+    /**
+     * Fetches a VerificationToken by raw token string, validates expiry and status.
+     * Sets status to EXPIRED in DB if past expiresAt.
+     *
+     * @throws TokenException NOT_FOUND | EXPIRED
+     */
+    public VerificationToken findValidVerificationToken(String tokenString, TokenType type) {
+        if (tokenString == null) {
+            throw new TokenException(type, TokenFailureReason.MISSING);
         }
-        return "ERROR";
+        VerificationToken token = verificationTokenRepo
+                .findByTokenHash(hash(tokenString))
+                .orElseThrow(() -> new TokenException(type, TokenFailureReason.INVALID));
+
+        if (token.getExpiresAt().isBefore(Instant.now())) {
+            token.setStatus(Status.EXPIRED);
+            verificationTokenRepo.save(token);
+            throw new TokenException(type, TokenFailureReason.EXPIRED);
+        }
+
+        if (token.getType() != type) {
+            throw new TokenException(type, TokenFailureReason.INVALID);
+        }
+
+        if (token.getStatus() == Status.CONSUMED) {
+            throw new TokenException(type, TokenFailureReason.ALREADY_CONSUMED);
+        }
+
+        return token;
     }
 
     /**
-     * Generates a refresh token for authentication sessions.
-     * Stores only a hashed version in DB.
+     * Fetches a RefreshToken by raw token string, validates expiry.
+     * Sets status to EXPIRED in DB if past absoluteExpiry.
      *
-     * @param user       target user
-     * @param rememberMe whether to use extended expiry
-     * @return raw refresh token (returned once, never stored)
+     * @throws TokenException NOT_FOUND | EXPIRED
      */
+    public RefreshToken findValidRefreshToken(String tokenString) {
+        if (tokenString == null) {
+            throw new TokenException(TokenType.REFRESH_TOKEN, TokenFailureReason.MISSING);
+        }
+        RefreshToken token = refreshTokenRepo
+                .findByTokenHash(hash(tokenString))
+                .orElseThrow(() -> new TokenException(TokenType.REFRESH_TOKEN, TokenFailureReason.MISSING));
+
+        if (token.getAbsoluteExpiry().isBefore(Instant.now())) {
+            token.setStatus(Status.EXPIRED);
+            refreshTokenRepo.save(token);
+            throw new TokenException(TokenType.REFRESH_TOKEN, TokenFailureReason.EXPIRED);
+        }
+
+        return token;
+    }
+
+    // -------------------------------------------------------------------------
+    // Generation
+    // -------------------------------------------------------------------------
+
     public String generateRefreshToken(User user, boolean rememberMe) {
-
         Instant expiresAt = Instant.now().plusMillis(
-                rememberMe
-                        ? props.getRefreshTokenExpiryMs()
-                        : props.getShortAbsoluteExpiryMs());
-
+                rememberMe ? props.getRefreshTokenExpiryMs() : props.getShortAbsoluteExpiryMs());
         Instant absoluteExpiry = Instant.now().plusMillis(
-                rememberMe
-                        ? props.getAbsoluteExpiryMs()
-                        : props.getShortAbsoluteExpiryMs());
+                rememberMe ? props.getAbsoluteExpiryMs() : props.getShortAbsoluteExpiryMs());
 
         String tokenString = generateRandomString();
-        String tokenHash = hash(tokenString);
-
-        RefreshToken token = new RefreshToken(tokenHash, user, expiresAt, absoluteExpiry);
-        refreshTokenRepo.save(token);
-
+        refreshTokenRepo.save(new RefreshToken(hash(tokenString), user, expiresAt, absoluteExpiry));
         return tokenString;
     }
 
-    private String generateToken(User user,
-            TokenType type,
-            Instant expiresAt,
-            String other) {
-
+    private String generateToken(User user, TokenType type, Instant expiresAt, String other) {
         String tokenString = generateRandomString();
-        String tokenHash = hash(tokenString);
-
-        VerificationToken token = new VerificationToken(tokenHash, user, expiresAt, type);
+        VerificationToken token = new VerificationToken(hash(tokenString), user, expiresAt, type);
         token.setOther(other);
-
         verificationTokenRepo.save(token);
         return tokenString;
     }
 
-    /**
-     * Generates an email verification token used for account activation.
-     * Stored as hash only.
-     *
-     * @param user target user
-     * @return raw verification token
-     */
     public String generateEmailVerificationToken(User user) {
-        return generateToken(
-                user,
-                TokenType.EMAIL_VERIFICATION,
-                Instant.now().plusMillis(props.getEmailVerificationTokenExpiryMs()),
-                null);
+        return generateToken(user, TokenType.EMAIL_VERIFICATION,
+                Instant.now().plusMillis(props.getEmailVerificationTokenExpiryMs()), null);
     }
 
-    /**
-     * Generates a challenge token used in multi-step authentication flows.
-     * Links to an email verification token via the "other" field.
-     *
-     * @param user       target user
-     * @param emailToken related email verification token
-     * @return raw challenge token
-     */
     public String generateChallengeToken(User user, String emailToken) {
-        return generateToken(
-                user,
-                TokenType.CHALLENGE,
-                Instant.now().plusMillis(props.getChallengeTokenExpiryMs()),
-                emailToken);
+        return generateToken(user, TokenType.CHALLENGE,
+                Instant.now().plusMillis(props.getChallengeTokenExpiryMs()), emailToken);
     }
 
-    /**
-     * Generates a second-factor authentication token.
-     * Used for 2FA verification steps.
-     *
-     * @param user target user
-     * @return raw 2FA token
-     */
     public String generate2FAtoken(User user) {
-        return generateToken(
-                user,
-                TokenType.TWO_FACTOR,
-                Instant.now().plusMillis(props.getTwoFactorTokenExpiryMs()),
-                null);
+        return generateToken(user, TokenType.TWO_FACTOR,
+                Instant.now().plusMillis(props.getTwoFactorTokenExpiryMs()), null);
     }
 
-    /**
-     * returns Optional<User> object by token and type. Hashes it automatically
-     * 
-     * @param tokenString
-     * @param type
-     * @return optional of user
-     */
-    public Optional<User> getUserByToken(String tokenString, TokenType type) {
-        switch (type) {
-            case REFRESH_TOKEN:
-                return getUserByTokenFromRefreshTokenRepo(tokenString);
-            case TWO_FACTOR, EMAIL_VERIFICATION, CHALLENGE:
-                return getUserByTokenFromVerificationTokenRepo(tokenString);
+    public User getUserByToken(String tokenString, TokenType type) {
+        return switch (type) {
+            case REFRESH_TOKEN -> findValidRefreshToken(tokenString).getUser();
+            case TWO_FACTOR, EMAIL_VERIFICATION, CHALLENGE -> findValidVerificationToken(tokenString, type).getUser();
+        };
+    }
+
+    // REFACTOR
+    public VerificationToken getVerificationTokenByOther(String other, TokenType type) {
+        if (other == null) {
+            throw new TokenException(type, TokenFailureReason.MISSING);
         }
-        return Optional.empty();
-    }
+        VerificationToken token = verificationTokenRepo
+                .findByOther(other)
+                .orElseThrow(() -> new TokenException(type, TokenFailureReason.INVALID));
 
-    private Optional<User> getUserByTokenFromRefreshTokenRepo(String tokenString) {
-        Optional<RefreshToken> token = refreshTokenRepo.findByTokenHash(hash(tokenString));
-        if (token.isEmpty()) {
-            return Optional.empty();
+        if (token.getExpiresAt().isBefore(Instant.now())) {
+            token.setStatus(Status.EXPIRED);
+            verificationTokenRepo.save(token);
+            throw new TokenException(type, TokenFailureReason.EXPIRED);
         }
-        return Optional.of(token.get().getUser());
-    }
 
-    private Optional<User> getUserByTokenFromVerificationTokenRepo(String tokenString) {
-        Optional<VerificationToken> token = verificationTokenRepo.findByTokenHash(hash(tokenString));
-        if (token.isEmpty()) {
-            return Optional.empty();
+        if (token.getType() != type) {
+            throw new TokenException(type, TokenFailureReason.INVALID);
         }
-        return Optional.of(token.get().getUser());
+
+        if (token.getStatus() == Status.CONSUMED) {
+            throw new TokenException(type, TokenFailureReason.ALREADY_CONSUMED);
+        }
+
+        return token;
     }
 
-    public Optional<VerificationToken> getVerificationTokenByOther(String other) {
-        return verificationTokenRepo.findByOther(other);
+    public VerificationToken save(VerificationToken vt) {
+        return verificationTokenRepo.save(vt);
     }
 
-    public Optional<VerificationToken> getVerificationTokenByTokenHash(String tokenString) {
-        return verificationTokenRepo.findByTokenHash(hash(tokenString));
+    public RefreshToken save(RefreshToken rt) {
+        return refreshTokenRepo.save(rt);
     }
+
 }

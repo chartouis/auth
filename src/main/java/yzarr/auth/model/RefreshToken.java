@@ -6,6 +6,8 @@ import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,6 +17,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import yzarr.auth.model.enums.Status;
 
 @Entity
 @Data
@@ -37,6 +40,9 @@ public class RefreshToken {
     private Instant expiresAt;
 
     private Instant absoluteExpiry;
+
+    @Enumerated(EnumType.STRING)
+    private Status status = Status.VERIFIED;
 
     public RefreshToken(String tokenHash, User user, Instant expiresAt, Instant absoluteExpiry) {
         this.user = user;
