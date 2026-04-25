@@ -5,7 +5,9 @@ import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
 import yzarr.auth.model.AuthException;
 import yzarr.auth.model.User;
+import yzarr.auth.model.VerificationToken;
 import yzarr.auth.model.enums.ErrorCode;
+import yzarr.auth.model.enums.Status;
 import yzarr.auth.model.enums.TokenType;
 import yzarr.auth.pipeline.AuthContext;
 import yzarr.auth.repo.UserRepo;
@@ -26,14 +28,17 @@ public class VerifyEmailVerificationTokenStage implements AuthStage {
 
     @Override
     public AuthContext process(AuthContext context) {
-
-        User user = tokenService.getUserByToken(context.getToken(), TokenType.EMAIL_VERIFICATION);
+        VerificationToken token = tokenService.findValidVerificationToken(context.getToken(),
+                TokenType.EMAIL_VERIFICATION);
+        User user = token.getUser();
 
         if (user.isEmailVerified()) {
             throw new AuthException(ErrorCode.EMAIL_IS_ALREADY_VERIFIED);
         }
         user.setEmailVerified(true);
         context.setUser(userRepo.save(user));
+        token.setStatus(Status.CONSUMED);
+        tokenService.save(token);
         return context;
 
     }
