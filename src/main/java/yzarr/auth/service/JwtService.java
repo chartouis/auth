@@ -17,6 +17,9 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import yzarr.auth.AuthProperties;
+import yzarr.auth.model.TokenException;
+import yzarr.auth.model.enums.TokenFailureReason;
+import yzarr.auth.model.enums.TokenType;
 
 @Slf4j
 @Service
@@ -62,7 +65,11 @@ public class JwtService {
      * passed to generateToken).
      */
     public String extractSubject(String token) {
-        return extractClaim(token, Claims::getSubject);
+        String claim = extractClaim(token, Claims::getSubject);
+        if (claim == null) {
+            throw new TokenException(TokenType.ACCESS_TOKEN, TokenFailureReason.INVALID);
+        }
+        return claim;
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimResolver) {
@@ -85,30 +92,25 @@ public class JwtService {
      * 
      * @param jwt
      * @param expectedSubject
-     * @return true or false
      */
-    public boolean validateToken(String token, String expectedSubject) {
+    public void validateToken(String token, String expectedSubject) {
         try {
             String subject = extractSubject(token);
-            boolean valid = subject.equals(expectedSubject) && !isTokenExpired(token);
-            if (!valid) {
-                log.warn("Token validation failed — subject mismatch or expired for: {}", expectedSubject);
+
+            if (!subject.equals(expectedSubject)) {
+                throw new TokenException(
+                        TokenType.ACCESS_TOKEN,
+                        TokenFailureReason.INVALID);
             }
-            return valid;
+
         } catch (ExpiredJwtException e) {
-            log.warn("Token has expired: {}", e.getMessage());
-            return false;
+            throw new TokenException(
+                    TokenType.ACCESS_TOKEN,
+                    TokenFailureReason.EXPIRED);
         } catch (JwtException e) {
-            log.warn("Invalid JWT token: {}", e.getMessage());
-            return false;
+            throw new TokenException(
+                    TokenType.ACCESS_TOKEN,
+                    TokenFailureReason.INVALID);
         }
-    }
-
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
     }
 }

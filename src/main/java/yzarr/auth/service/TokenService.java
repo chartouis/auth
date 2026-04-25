@@ -11,10 +11,12 @@ import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
 import yzarr.auth.AuthProperties;
+import yzarr.auth.model.AuthException;
 import yzarr.auth.model.RefreshToken;
 import yzarr.auth.model.TokenException;
 import yzarr.auth.model.User;
 import yzarr.auth.model.VerificationToken;
+import yzarr.auth.model.enums.ErrorCode;
 import yzarr.auth.model.enums.Status;
 import yzarr.auth.model.enums.TokenFailureReason;
 import yzarr.auth.model.enums.TokenType;
@@ -28,7 +30,6 @@ public class TokenService {
     private final VerificationTokenRepo verificationTokenRepo;
     private final SecureRandom random;
     private final AuthProperties props;
-    private final MessageDigest sha256;
 
     public TokenService(RefreshTokenRepo refreshTokenRepo, VerificationTokenRepo verificationTokenRepo,
             AuthProperties props) {
@@ -36,34 +37,31 @@ public class TokenService {
         this.verificationTokenRepo = verificationTokenRepo;
         this.random = new SecureRandom();
         this.props = props;
-        try {
-            this.sha256 = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 not available", e);
-        }
     }
 
     private String generateRandomString() {
         byte[] bytes = new byte[40];
         random.nextBytes(bytes);
-        return Base64.getEncoder().encodeToString(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
-    private synchronized String hash(String token) {
-        sha256.reset();
-        byte[] tokenHash = sha256.digest(token.getBytes(StandardCharsets.UTF_8));
-        return Base64.getEncoder().encodeToString(tokenHash);
+    private String hash(String token) {
+        if (token == null)
+            return null;
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] tokenHash = md.digest(token.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(tokenHash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 not available", e);
+        }
     }
-
-    // -------------------------------------------------------------------------
-    // Validated lookups — use these in stages instead of raw repo calls
-    // -------------------------------------------------------------------------
 
     /**
      * Fetches a VerificationToken by raw token string, validates expiry and status.
      * Sets status to EXPIRED in DB if past expiresAt.
      *
-     * @throws TokenException NOT_FOUND | EXPIRED
+     * @throws TokenException MISSING | EXPIRED
      */
     public VerificationToken findValidVerificationToken(String tokenString, TokenType type) {
         if (tokenString == null) {
@@ -94,7 +92,7 @@ public class TokenService {
      * Fetches a RefreshToken by raw token string, validates expiry.
      * Sets status to EXPIRED in DB if past absoluteExpiry.
      *
-     * @throws TokenException NOT_FOUND | EXPIRED
+     * @throws TokenException MISSING | EXPIRED
      */
     public RefreshToken findValidRefreshToken(String tokenString) {
         if (tokenString == null) {
@@ -104,7 +102,7 @@ public class TokenService {
                 .findByTokenHash(hash(tokenString))
                 .orElseThrow(() -> new TokenException(TokenType.REFRESH_TOKEN, TokenFailureReason.MISSING));
 
-        if (token.getAbsoluteExpiry().isBefore(Instant.now())) {
+        if (token.getAbsoluteExpiry().isBefore(Instant.now()) || token.getExpiresAt().isBefore(Instant.now())) {
             token.setStatus(Status.EXPIRED);
             refreshTokenRepo.save(token);
             throw new TokenException(TokenType.REFRESH_TOKEN, TokenFailureReason.EXPIRED);
@@ -155,6 +153,7 @@ public class TokenService {
         return switch (type) {
             case REFRESH_TOKEN -> findValidRefreshToken(tokenString).getUser();
             case TWO_FACTOR, EMAIL_VERIFICATION, CHALLENGE -> findValidVerificationToken(tokenString, type).getUser();
+            default -> throw new AuthException(ErrorCode.UNEXPECTED_ERROR);
         };
     }
 
