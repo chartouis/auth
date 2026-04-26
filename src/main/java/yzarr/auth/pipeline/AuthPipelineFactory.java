@@ -31,14 +31,14 @@ public class AuthPipelineFactory {
     private final SetChallengeAndSend2FAstage setChallengeAndSend2FAstage;
     private final VerifyChallengeStage verifyChallengeStage;
 
-    public AuthPipelineFactory(CreateAccountStage createAccountStage, ValidEmailPasswordStage validEmailPasswordStage,
-            AuthenticationStage authenticationStage, RefreshTokenIssueStage refreshTokenIssueStage,
-            VerifyRefreshTokenStage verifyRefreshTokenStage, AccessTokenIssueStage accessTokenIssueStage,
-            EmailVerificationStage emailVerificationStage,
+    public AuthPipelineFactory(AuthProperties authProperties, CreateAccountStage createAccountStage,
+            ValidEmailPasswordStage validEmailPasswordStage, AuthenticationStage authenticationStage,
+            RefreshTokenIssueStage refreshTokenIssueStage, VerifyRefreshTokenStage verifyRefreshTokenStage,
+            AccessTokenIssueStage accessTokenIssueStage, EmailVerificationStage emailVerificationStage,
             VerifyEmailVerificationTokenStage verifyEmailVerificationTokenStage,
             ConsumeChallengeStage consumeChallengeStage, SetChallengeAndSend2FAstage setChallengeAndSend2FAstage,
-            SetChallengeAndSend2FAstage setChallengeAndSend2FAstage2, VerifyChallengeStage verifyChallengeStage,
-            AuthProperties authProperties) {
+            VerifyChallengeStage verifyChallengeStage) {
+        this.authProperties = authProperties;
         this.createAccountStage = createAccountStage;
         this.validEmailPasswordStage = validEmailPasswordStage;
         this.authenticationStage = authenticationStage;
@@ -48,9 +48,8 @@ public class AuthPipelineFactory {
         this.emailVerificationStage = emailVerificationStage;
         this.verifyEmailVerificationTokenStage = verifyEmailVerificationTokenStage;
         this.consumeChallengeStage = consumeChallengeStage;
-        this.setChallengeAndSend2FAstage = setChallengeAndSend2FAstage2;
+        this.setChallengeAndSend2FAstage = setChallengeAndSend2FAstage;
         this.verifyChallengeStage = verifyChallengeStage;
-        this.authProperties = authProperties;
     }
 
     /**
