@@ -66,11 +66,18 @@ public class TokenService {
      * @throws TokenException MISSING | EXPIRED
      */
     public VerificationToken findValidVerificationToken(String tokenString, TokenType type) {
+        return findValidVerificationToken(tokenString, type, false);
+    }
+
+    public VerificationToken findValidVerificationToken(String tokenString, TokenType type, boolean raw) {
         if (tokenString == null) {
             throw new TokenException(type, TokenFailureReason.MISSING);
         }
+
+        String tokenHash = raw ? tokenString : hash(tokenString);
+
         VerificationToken token = verificationTokenRepo
-                .findByTokenHash(hash(tokenString))
+                .findByTokenHash(tokenHash)
                 .orElseThrow(() -> new TokenException(type, TokenFailureReason.INVALID));
 
         if (token.getExpiresAt().isBefore(Instant.now())) {
@@ -117,10 +124,6 @@ public class TokenService {
         return token;
     }
 
-    // -------------------------------------------------------------------------
-    // Generation
-    // -------------------------------------------------------------------------
-
     public String generateRefreshToken(User user, boolean rememberMe) {
         Instant expiresAt = Instant.now().plusMillis(
                 rememberMe ? props.getRefreshTokenExpiryMs() : props.getShortAbsoluteExpiryMs());
@@ -147,14 +150,9 @@ public class TokenService {
                 Instant.now().plusMillis(props.getEmailVerificationTokenExpiryMs()), null);
     }
 
-    public String generateChallengeToken(User user, String emailToken) {
-        return generateToken(user, TokenType.CHALLENGE,
-                Instant.now().plusMillis(props.getChallengeTokenExpiryMs()), emailToken);
-    }
-
-    public String generate2FAtoken(User user) {
+    public String generate2FAtoken(User user, String challenge) {
         return generateToken(user, TokenType.TWO_FACTOR,
-                Instant.now().plusMillis(props.getTwoFactorTokenExpiryMs()), null);
+                Instant.now().plusMillis(props.getTwoFactorTokenExpiryMs()), hash(challenge));
     }
 
     public User getUserByToken(String tokenString, TokenType type) {
@@ -165,30 +163,9 @@ public class TokenService {
         };
     }
 
-    // REFACTOR
-    public VerificationToken getVerificationTokenByMetadata(String metadata, TokenType type) {
-        if (metadata == null) {
-            throw new TokenException(type, TokenFailureReason.MISSING);
-        }
-        VerificationToken token = verificationTokenRepo
-                .findByMetadata(metadata)
-                .orElseThrow(() -> new TokenException(type, TokenFailureReason.INVALID));
-
-        if (token.getExpiresAt().isBefore(Instant.now())) {
-            token.setStatus(VerificationTokenStatus.EXPIRED);
-            verificationTokenRepo.save(token);
-            throw new TokenException(type, TokenFailureReason.EXPIRED);
-        }
-
-        if (token.getType() != type) {
-            throw new TokenException(type, TokenFailureReason.INVALID);
-        }
-
-        if (token.getStatus() == VerificationTokenStatus.CONSUMED) {
-            throw new TokenException(type, TokenFailureReason.ALREADY_CONSUMED);
-        }
-
-        return token;
+    public String generateChallengeToken(User user, boolean rememberMe) {
+        return generateToken(user, TokenType.CHALLENGE,
+                Instant.now().plusMillis(props.getChallengeTokenExpiryMs()), Boolean.toString(rememberMe));
     }
 
     public VerificationToken save(VerificationToken vt) {

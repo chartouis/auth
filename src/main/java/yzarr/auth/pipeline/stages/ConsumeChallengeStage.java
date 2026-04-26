@@ -38,6 +38,7 @@ public class ConsumeChallengeStage implements AuthStage {
         }
         challenge.setStatus(VerificationTokenStatus.CONSUMED);
         context.setUser(challenge.getUser());
+        context.setRememberMe(Boolean.parseBoolean(challenge.getMetadata()));
         tokenService.save(challenge);
         return context;
     }

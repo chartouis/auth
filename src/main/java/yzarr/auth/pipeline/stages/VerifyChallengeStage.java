@@ -25,7 +25,8 @@ public class VerifyChallengeStage implements AuthStage {
     public AuthContext process(AuthContext context) {
         String stwofa = context.getToken();
         VerificationToken twofa = tokenService.findValidVerificationToken(stwofa, TokenType.TWO_FACTOR);
-        VerificationToken challenge = tokenService.getVerificationTokenByMetadata(stwofa, TokenType.CHALLENGE);
+        VerificationToken challenge = tokenService.findValidVerificationToken(twofa.getMetadata(), TokenType.CHALLENGE,
+                true);
         if (twofa.getStatus() != VerificationTokenStatus.PENDING) {
             throw new TokenException(TokenType.TWO_FACTOR, TokenFailureReason.INVALID);
         }

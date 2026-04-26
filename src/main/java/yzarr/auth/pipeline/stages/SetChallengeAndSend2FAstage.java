@@ -26,10 +26,11 @@ public class SetChallengeAndSend2FAstage implements AuthStage {
 
     @Override
     public AuthContext process(AuthContext context) {
-        String twofa = tokenService.generate2FAtoken(context.getUser());
-        mailService.sendEmailVerificationMessage(twofa, context.getEmail(), "/auth/verify/2fa");
-        String challenge = tokenService.generateChallengeToken(context.getUser(), twofa);
+
+        String challenge = tokenService.generateChallengeToken(context.getUser(), context.isRememberMe());
         cookieService.setChallengeCookie(challenge, context.getResponse());
+        String twofa = tokenService.generate2FAtoken(context.getUser(), challenge);
+        mailService.sendEmailVerificationMessage(twofa, context.getEmail(), "/auth/verify/2fa");
         return context;
     }
 
