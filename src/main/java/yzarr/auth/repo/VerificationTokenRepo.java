@@ -10,5 +10,5 @@ import yzarr.auth.model.VerificationToken;
 public interface VerificationTokenRepo extends JpaRepository<VerificationToken, UUID> {
     Optional<VerificationToken> findByTokenHash(String hash);
 
-    Optional<VerificationToken> findByOther(String other);
+    Optional<VerificationToken> findByMetadata(String metadata);
 }

@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
 import yzarr.auth.model.TokenException;
 import yzarr.auth.model.VerificationToken;
-import yzarr.auth.model.enums.Status;
+import yzarr.auth.model.enums.VerificationTokenStatus;
 import yzarr.auth.model.enums.TokenFailureReason;
 import yzarr.auth.model.enums.TokenType;
 import yzarr.auth.pipeline.AuthContext;
@@ -26,12 +26,12 @@ public class VerifyChallengeStage implements AuthStage {
         String stwofa = context.getToken();
         VerificationToken twofa = tokenService.findValidVerificationToken(stwofa, TokenType.TWO_FACTOR);
         VerificationToken challenge = tokenService.getVerificationTokenByOther(stwofa, TokenType.CHALLENGE);
-        if (twofa.getStatus() != Status.PENDING) {
+        if (twofa.getStatus() != VerificationTokenStatus.PENDING) {
             throw new TokenException(TokenType.TWO_FACTOR, TokenFailureReason.INVALID);
         }
 
-        challenge.setStatus(Status.VERIFIED);
-        twofa.setStatus(Status.CONSUMED);
+        challenge.setStatus(VerificationTokenStatus.VERIFIED);
+        twofa.setStatus(VerificationTokenStatus.CONSUMED);
 
         tokenService.save(challenge);
         tokenService.save(twofa);

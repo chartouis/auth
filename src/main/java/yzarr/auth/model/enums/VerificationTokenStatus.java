@@ -1,6 +1,6 @@
 package yzarr.auth.model.enums;
 
-public enum Status {
+public enum VerificationTokenStatus {
     PENDING,
     VERIFIED,
     EXPIRED,

@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
 import yzarr.auth.model.TokenException;
 import yzarr.auth.model.VerificationToken;
-import yzarr.auth.model.enums.Status;
+import yzarr.auth.model.enums.VerificationTokenStatus;
 import yzarr.auth.model.enums.TokenFailureReason;
 import yzarr.auth.model.enums.TokenType;
 import yzarr.auth.pipeline.AuthContext;
@@ -29,14 +29,14 @@ public class ConsumeChallengeStage implements AuthStage {
 
         VerificationToken challenge = tokenService.findValidVerificationToken(token, TokenType.CHALLENGE);
         // code 202
-        if (challenge.getStatus() == Status.PENDING) {
+        if (challenge.getStatus() == VerificationTokenStatus.PENDING) {
             throw new TokenException(TokenType.CHALLENGE, TokenFailureReason.PENDING);
         }
         // invalid
-        if (challenge.getStatus() != Status.VERIFIED) {
+        if (challenge.getStatus() != VerificationTokenStatus.VERIFIED) {
             throw new TokenException(TokenType.CHALLENGE, TokenFailureReason.INVALID);
         }
-        challenge.setStatus(Status.CONSUMED);
+        challenge.setStatus(VerificationTokenStatus.CONSUMED);
         context.setUser(challenge.getUser());
         tokenService.save(challenge);
         return context;

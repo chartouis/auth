@@ -7,7 +7,7 @@ import yzarr.auth.model.AuthException;
 import yzarr.auth.model.User;
 import yzarr.auth.model.VerificationToken;
 import yzarr.auth.model.enums.ErrorCode;
-import yzarr.auth.model.enums.Status;
+import yzarr.auth.model.enums.VerificationTokenStatus;
 import yzarr.auth.model.enums.TokenType;
 import yzarr.auth.pipeline.AuthContext;
 import yzarr.auth.repo.UserRepo;
@@ -37,7 +37,7 @@ public class VerifyEmailVerificationTokenStage implements AuthStage {
         }
         user.setEmailVerified(true);
         context.setUser(userRepo.save(user));
-        token.setStatus(Status.CONSUMED);
+        token.setStatus(VerificationTokenStatus.CONSUMED);
         tokenService.save(token);
         return context;
 

@@ -17,7 +17,9 @@ import yzarr.auth.model.TokenException;
 import yzarr.auth.model.User;
 import yzarr.auth.model.VerificationToken;
 import yzarr.auth.model.enums.ErrorCode;
-import yzarr.auth.model.enums.Status;
+import yzarr.auth.model.enums.RefreshTokenStatus;
+import yzarr.auth.model.enums.RevokeReason;
+import yzarr.auth.model.enums.VerificationTokenStatus;
 import yzarr.auth.model.enums.TokenFailureReason;
 import yzarr.auth.model.enums.TokenType;
 import yzarr.auth.repo.RefreshTokenRepo;
@@ -72,7 +74,7 @@ public class TokenService {
                 .orElseThrow(() -> new TokenException(type, TokenFailureReason.INVALID));
 
         if (token.getExpiresAt().isBefore(Instant.now())) {
-            token.setStatus(Status.EXPIRED);
+            token.setStatus(VerificationTokenStatus.EXPIRED);
             verificationTokenRepo.save(token);
             throw new TokenException(type, TokenFailureReason.EXPIRED);
         }
@@ -81,7 +83,7 @@ public class TokenService {
             throw new TokenException(type, TokenFailureReason.INVALID);
         }
 
-        if (token.getStatus() == Status.CONSUMED) {
+        if (token.getStatus() == VerificationTokenStatus.CONSUMED) {
             throw new TokenException(type, TokenFailureReason.ALREADY_CONSUMED);
         }
 
@@ -103,9 +105,13 @@ public class TokenService {
                 .orElseThrow(() -> new TokenException(TokenType.REFRESH_TOKEN, TokenFailureReason.MISSING));
 
         if (token.getAbsoluteExpiry().isBefore(Instant.now()) || token.getExpiresAt().isBefore(Instant.now())) {
-            token.setStatus(Status.EXPIRED);
+            token.revoke(RevokeReason.EXPIRED);
             refreshTokenRepo.save(token);
             throw new TokenException(TokenType.REFRESH_TOKEN, TokenFailureReason.EXPIRED);
+        }
+
+        if (token.getStatus() == RefreshTokenStatus.REVOKED) {
+            throw new TokenException(TokenType.REFRESH_TOKEN, TokenFailureReason.ALREADY_REVOKED);
         }
 
         return token;
@@ -122,14 +128,16 @@ public class TokenService {
                 rememberMe ? props.getAbsoluteExpiryMs() : props.getShortAbsoluteExpiryMs());
 
         String tokenString = generateRandomString();
-        refreshTokenRepo.save(new RefreshToken(hash(tokenString), user, expiresAt, absoluteExpiry));
+        RefreshToken token = new RefreshToken(hash(tokenString), user, expiresAt, absoluteExpiry);
+        token.setRememberMe(rememberMe);
+        refreshTokenRepo.save(token);
         return tokenString;
     }
 
     private String generateToken(User user, TokenType type, Instant expiresAt, String other) {
         String tokenString = generateRandomString();
         VerificationToken token = new VerificationToken(hash(tokenString), user, expiresAt, type);
-        token.setOther(other);
+        token.setMetadata(other);
         verificationTokenRepo.save(token);
         return tokenString;
     }
@@ -163,11 +171,11 @@ public class TokenService {
             throw new TokenException(type, TokenFailureReason.MISSING);
         }
         VerificationToken token = verificationTokenRepo
-                .findByOther(other)
+                .findByMetadata(other)
                 .orElseThrow(() -> new TokenException(type, TokenFailureReason.INVALID));
 
         if (token.getExpiresAt().isBefore(Instant.now())) {
-            token.setStatus(Status.EXPIRED);
+            token.setStatus(VerificationTokenStatus.EXPIRED);
             verificationTokenRepo.save(token);
             throw new TokenException(type, TokenFailureReason.EXPIRED);
         }
@@ -176,7 +184,7 @@ public class TokenService {
             throw new TokenException(type, TokenFailureReason.INVALID);
         }
 
-        if (token.getStatus() == Status.CONSUMED) {
+        if (token.getStatus() == VerificationTokenStatus.CONSUMED) {
             throw new TokenException(type, TokenFailureReason.ALREADY_CONSUMED);
         }
 
