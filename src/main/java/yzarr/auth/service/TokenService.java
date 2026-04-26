@@ -134,10 +134,10 @@ public class TokenService {
         return tokenString;
     }
 
-    private String generateToken(User user, TokenType type, Instant expiresAt, String other) {
+    private String generateToken(User user, TokenType type, Instant expiresAt, String metadata) {
         String tokenString = generateRandomString();
         VerificationToken token = new VerificationToken(hash(tokenString), user, expiresAt, type);
-        token.setMetadata(other);
+        token.setMetadata(metadata);
         verificationTokenRepo.save(token);
         return tokenString;
     }
@@ -166,12 +166,12 @@ public class TokenService {
     }
 
     // REFACTOR
-    public VerificationToken getVerificationTokenByOther(String other, TokenType type) {
-        if (other == null) {
+    public VerificationToken getVerificationTokenByMetadata(String metadata, TokenType type) {
+        if (metadata == null) {
             throw new TokenException(type, TokenFailureReason.MISSING);
         }
         VerificationToken token = verificationTokenRepo
-                .findByMetadata(other)
+                .findByMetadata(metadata)
                 .orElseThrow(() -> new TokenException(type, TokenFailureReason.INVALID));
 
         if (token.getExpiresAt().isBefore(Instant.now())) {
