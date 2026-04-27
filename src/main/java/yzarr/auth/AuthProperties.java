@@ -9,37 +9,38 @@ import lombok.Data;
 @Component
 @Data
 public class AuthProperties {
-    // Must be changed in the application.properties
-    private String JwtSecret = "default";
+
+    // Must be changed in application.properties
+    private String jwtSecret = "default";
 
     // RememberMe
-    private Long RefreshTokenExpiryMs = 1000L * 60L * 60L * 24L * 30L; // 30days
-    private Long AbsoluteExpiryMs = 1000L * 60L * 60L * 24L * 90L; // 90days
-    private Long ShortAbsoluteExpiryMs = 1000L * 60L * 60L; // 1hour
-    private Long AccessTokenExpiryMs = 1000L * 60L * 15L; // 15 minutes
-    private Long EmailVerificationTokenExpiryMs = 1000L * 60L * 60L;
-    private Long ChallengeTokenExpiryMs = 1000L * 600L;
-    private Long TwoFactorTokenExpiryMs = 1000L * 600L;
-    private boolean EnableAuth = true;
-    private boolean RefreshTokenRotation = true;
+    private Long refreshTokenExpiryMs = 1000L * 60L * 60L * 24L * 30L; // 30 days
+    private Long absoluteExpiryMs = 1000L * 60L * 60L * 24L * 90L; // 90 days
+    private Long shortAbsoluteExpiryMs = 1000L * 60L * 60L; // 1 hour
+    private Long accessTokenExpiryMs = 1000L * 60L * 15L; // 15 minutes
+    private Long emailVerificationTokenExpiryMs = 1000L * 60L * 60L;
+    private Long challengeTokenExpiryMs = 1000L * 600L;
+    private Long twoFactorTokenExpiryMs = 1000L * 600L;
+
+    private boolean enableAuth = true;
+    private boolean refreshTokenRotation = true;
     private boolean emailVerification = false;
 
     // if true, then email verification should also be true
-    private boolean TwoFa = false;
-
-    private boolean OAuth = false;
+    private boolean twoFa = false;
+    private boolean oauth = false;
 
     // Cookie attributes
     private String sameSite = "Strict";
     private boolean httpOnly = true;
     private boolean secure = true;
 
-    // Must be set to something in the application.properties
+    // Must be set in application.properties
     private String frontendUrl = "";
 
-    private short MinPasswordLength = 8;
+    private short minPasswordLength = 8;
 
-    // SMTP password and app name
+    // SMTP credentials
     private String appUsername = "default@gmail.com";
     private String appPassword = "default";
 }
