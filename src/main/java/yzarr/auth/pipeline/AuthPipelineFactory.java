@@ -9,6 +9,7 @@ import yzarr.auth.pipeline.stages.ConsumeChallengeStage;
 import yzarr.auth.pipeline.stages.CreateAccountStage;
 import yzarr.auth.pipeline.stages.EmailVerificationStage;
 import yzarr.auth.pipeline.stages.RefreshTokenIssueStage;
+import yzarr.auth.pipeline.stages.RefreshTokenRotationStage;
 import yzarr.auth.pipeline.stages.SetChallengeAndSend2FAstage;
 import yzarr.auth.pipeline.stages.ValidEmailPasswordStage;
 import yzarr.auth.pipeline.stages.VerifyChallengeStage;
@@ -30,6 +31,7 @@ public class AuthPipelineFactory {
     private final ConsumeChallengeStage consumeChallengeStage;
     private final SetChallengeAndSend2FAstage setChallengeAndSend2FAstage;
     private final VerifyChallengeStage verifyChallengeStage;
+    private final RefreshTokenRotationStage refreshTokenRotationStage;
 
     public AuthPipelineFactory(AuthProperties authProperties, CreateAccountStage createAccountStage,
             ValidEmailPasswordStage validEmailPasswordStage, AuthenticationStage authenticationStage,
@@ -37,7 +39,7 @@ public class AuthPipelineFactory {
             AccessTokenIssueStage accessTokenIssueStage, EmailVerificationStage emailVerificationStage,
             VerifyEmailVerificationTokenStage verifyEmailVerificationTokenStage,
             ConsumeChallengeStage consumeChallengeStage, SetChallengeAndSend2FAstage setChallengeAndSend2FAstage,
-            VerifyChallengeStage verifyChallengeStage) {
+            VerifyChallengeStage verifyChallengeStage, RefreshTokenRotationStage refreshTokenRotationStage) {
         this.authProperties = authProperties;
         this.createAccountStage = createAccountStage;
         this.validEmailPasswordStage = validEmailPasswordStage;
@@ -50,6 +52,7 @@ public class AuthPipelineFactory {
         this.consumeChallengeStage = consumeChallengeStage;
         this.setChallengeAndSend2FAstage = setChallengeAndSend2FAstage;
         this.verifyChallengeStage = verifyChallengeStage;
+        this.refreshTokenRotationStage = refreshTokenRotationStage;
     }
 
     /**
@@ -89,9 +92,13 @@ public class AuthPipelineFactory {
     }
 
     public AuthPipeline createRefresh() {
-        return new AuthPipeline()
+        AuthPipeline pipeline = new AuthPipeline()
                 .add(verifyRefreshTokenStage)
                 .add(accessTokenIssueStage);
+        if (authProperties.isRefreshTokenRotation()) {
+            pipeline.add(refreshTokenRotationStage);
+        }
+        return pipeline;
     }
 
     public AuthPipeline createVerifyEmail() {

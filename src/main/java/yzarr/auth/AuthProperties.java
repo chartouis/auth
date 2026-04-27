@@ -21,6 +21,7 @@ public class AuthProperties {
     private Long ChallengeTokenExpiryMs = 1000L * 600L;
     private Long TwoFactorTokenExpiryMs = 1000L * 600L;
     private boolean EnableAuth = true;
+    private boolean RefreshTokenRotation = true;
     private boolean emailVerification = false;
 
     // if true, then email verification should also be true

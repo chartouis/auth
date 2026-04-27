@@ -26,6 +26,7 @@ public class VerifyRefreshTokenStage implements AuthStage {
         User user = tokenService.getUserByToken(token, TokenType.REFRESH_TOKEN);
 
         context.setUser(user);
+        context.setToken(token);
         return context;
     }
 
