@@ -81,8 +81,6 @@ public class TokenService {
                 .orElseThrow(() -> new TokenException(type, TokenFailureReason.INVALID));
 
         if (token.getExpiresAt().isBefore(Instant.now())) {
-            token.setStatus(VerificationTokenStatus.EXPIRED);
-            verificationTokenRepo.save(token);
             throw new TokenException(type, TokenFailureReason.EXPIRED);
         }
 
