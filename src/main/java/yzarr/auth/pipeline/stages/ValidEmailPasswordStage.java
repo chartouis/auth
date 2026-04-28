@@ -1,6 +1,5 @@
 package yzarr.auth.pipeline.stages;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Component;
@@ -10,46 +9,41 @@ import yzarr.auth.model.AuthException;
 import yzarr.auth.model.enums.ErrorCode;
 import yzarr.auth.pipeline.AuthContext;
 
-/* Checks email and password for null, then checks password length and validates email wtih OWASP regex */
 @Component
 @Slf4j
 public class ValidEmailPasswordStage implements AuthStage {
-    private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}$";
-    private static final Pattern PATTERN = Pattern.compile(EMAIL_REGEX);
+
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+            "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}$");
 
     @Override
     public AuthContext process(AuthContext context) {
-        if (!isValidEmail(context.getEmail())) {
-            throw new AuthException(ErrorCode.INVALID_EMAIL_FORMAT);
-        }
-        if (context.getPassword().length() < context.getProps().getMinPasswordLength()) {
-            throw new AuthException(ErrorCode.PASSWORD_IS_TOO_SHORT);
-        }
-        if (!isValidPassword(context.getPassword())) {
-            throw new AuthException(ErrorCode.INVALID_CREDENTIALS);
-        }
+        validateEmail(context.getEmail());
+        validatePassword(context.getPassword(), context.getProps().getMinPasswordLength());
         return context;
     }
 
-    public static boolean isValidEmail(String email) {
-        if (email == null)
-            return false;
-        Matcher matcher = PATTERN.matcher(email);
-        return matcher.matches();
+    private void validateEmail(String email) {
+        if (email == null || !EMAIL_PATTERN.matcher(email).matches()) {
+            throw new AuthException(ErrorCode.INVALID_EMAIL_FORMAT);
+        }
     }
 
-    public static boolean isValidPassword(String password) {
-        if (password == null)
-            return false;
+    private void validatePassword(String password, int minLength) {
+        if (password == null) {
+            throw new AuthException(ErrorCode.INVALID_CREDENTIALS);
+        }
+
+        if (password.length() < minLength) {
+            throw new AuthException(ErrorCode.PASSWORD_IS_TOO_SHORT);
+        }
+
         for (int i = 0; i < password.length(); i++) {
             char c = password.charAt(i);
 
-            if (Character.isISOControl(c))
-                return false;
-            if (Character.isWhitespace(c))
-                return false;
+            if (Character.isISOControl(c) || Character.isWhitespace(c)) {
+                throw new AuthException(ErrorCode.INVALID_CHARACTERS);
+            }
         }
-
-        return true;
     }
 }

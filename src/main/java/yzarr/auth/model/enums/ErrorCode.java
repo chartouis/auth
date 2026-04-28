@@ -9,6 +9,7 @@ public enum ErrorCode {
 
     INVALID_CREDENTIALS(401, "Email or Password are invalid"),
     PASSWORD_IS_TOO_SHORT(400, "Password is too short"),
+    INVALID_CHARACTERS(400, "Password has invalid characters"),
     EMAIL_ALREADY_EXISTS(409, "Email already exists"),
     INVALID_EMAIL_FORMAT(400, "Invalid email format"),
     EMAIL_IS_NOT_VERIFIED(403, "Email is not verified"),
