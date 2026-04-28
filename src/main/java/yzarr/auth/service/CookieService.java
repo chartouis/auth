@@ -85,4 +85,19 @@ public class CookieService {
 
         return null;
     }
+
+    private String clearCookieString(TokenType type) {
+        return ResponseCookie.from(type.toString(), "")
+                .httpOnly(props.isHttpOnly())
+                .secure(props.isSecure())
+                .path("/")
+                .maxAge(0)
+                .sameSite(props.getSameSite())
+                .build()
+                .toString();
+    }
+
+    public void clearCookie(TokenType type, HttpServletResponse response) {
+        response.addHeader(HttpHeaders.SET_COOKIE, clearCookieString(type));
+    }
 }

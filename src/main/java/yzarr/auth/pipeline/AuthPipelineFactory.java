@@ -8,6 +8,7 @@ import yzarr.auth.pipeline.stages.AuthenticationStage;
 import yzarr.auth.pipeline.stages.ConsumeChallengeStage;
 import yzarr.auth.pipeline.stages.CreateAccountStage;
 import yzarr.auth.pipeline.stages.EmailVerificationStage;
+import yzarr.auth.pipeline.stages.LogoutStage;
 import yzarr.auth.pipeline.stages.RefreshTokenIssueStage;
 import yzarr.auth.pipeline.stages.RefreshTokenRotationStage;
 import yzarr.auth.pipeline.stages.SetChallengeAndSend2FAstage;
@@ -32,6 +33,7 @@ public class AuthPipelineFactory {
     private final SetChallengeAndSend2FAstage setChallengeAndSend2FAstage;
     private final VerifyChallengeStage verifyChallengeStage;
     private final RefreshTokenRotationStage refreshTokenRotationStage;
+    private final LogoutStage logoutStage;
 
     public AuthPipelineFactory(AuthProperties authProperties, CreateAccountStage createAccountStage,
             ValidEmailPasswordStage validEmailPasswordStage, AuthenticationStage authenticationStage,
@@ -39,7 +41,8 @@ public class AuthPipelineFactory {
             AccessTokenIssueStage accessTokenIssueStage, EmailVerificationStage emailVerificationStage,
             VerifyEmailVerificationTokenStage verifyEmailVerificationTokenStage,
             ConsumeChallengeStage consumeChallengeStage, SetChallengeAndSend2FAstage setChallengeAndSend2FAstage,
-            VerifyChallengeStage verifyChallengeStage, RefreshTokenRotationStage refreshTokenRotationStage) {
+            VerifyChallengeStage verifyChallengeStage, RefreshTokenRotationStage refreshTokenRotationStage,
+            LogoutStage logoutStage) {
         this.authProperties = authProperties;
         this.createAccountStage = createAccountStage;
         this.validEmailPasswordStage = validEmailPasswordStage;
@@ -53,6 +56,7 @@ public class AuthPipelineFactory {
         this.setChallengeAndSend2FAstage = setChallengeAndSend2FAstage;
         this.verifyChallengeStage = verifyChallengeStage;
         this.refreshTokenRotationStage = refreshTokenRotationStage;
+        this.logoutStage = logoutStage;
     }
 
     /**
@@ -113,6 +117,11 @@ public class AuthPipelineFactory {
         return new AuthPipeline()
                 .add(consumeChallengeStage)
                 .add(refreshTokenIssueStage);
+    }
+
+    public AuthPipeline createLogout() {
+        return new AuthPipeline()
+                .add(logoutStage);
     }
 
 }

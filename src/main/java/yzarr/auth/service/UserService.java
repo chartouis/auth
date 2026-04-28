@@ -19,6 +19,7 @@ public class UserService {
     private final AuthPipeline verifyEmailPipeline;
     private final AuthPipeline verify2faPipeline;
     private final AuthPipeline check2faPipeline;
+    private final AuthPipeline logoutPipeline;
 
     public UserService(AuthPipelineFactory factory, AuthProperties props) {
         registerPipeline = factory.createRegister();
@@ -27,6 +28,7 @@ public class UserService {
         verifyEmailPipeline = factory.createVerifyEmail();
         verify2faPipeline = factory.createVerify2fa();
         check2faPipeline = factory.createCheck2faStatus();
+        logoutPipeline = factory.createLogout();
         this.props = props;
     }
 
@@ -77,6 +79,13 @@ public class UserService {
                 .request(request)
                 .response(response)
                 .props(props)
+                .build());
+    }
+
+    public void logout(HttpServletResponse response, HttpServletRequest request) {
+        logoutPipeline.execute(AuthContext.builder()
+                .response(response)
+                .request(request)
                 .build());
     }
 }

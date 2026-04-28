@@ -45,6 +45,7 @@ public class Filter extends OncePerRequestFilter {
         return path.equals("/auth/register")
                 || path.equals("/auth/login")
                 || path.equals("/auth/refresh")
+                || path.equals("/auth/refresh/logout")
                 || path.startsWith("/auth/verify");
     }
 

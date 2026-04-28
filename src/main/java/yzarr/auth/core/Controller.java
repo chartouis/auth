@@ -41,6 +41,11 @@ public class Controller {
         userService.refresh(response, request);
     }
 
+    @PostMapping("/refresh/logout")
+    public void logout(HttpServletResponse response, HttpServletRequest request) {
+        userService.logout(response, request);
+    }
+
     @GetMapping("/verify/email")
     public void verifyEmail(@RequestParam("token") String token) {
         userService.verifyEmail(token);
