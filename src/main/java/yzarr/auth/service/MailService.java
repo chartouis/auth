@@ -4,6 +4,7 @@ import java.net.URI;
 
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -18,6 +19,7 @@ public class MailService {
         this.javaMailSender = javaMailSender;
     }
 
+    @Async("mailTaskExecutor")
     public void sendEmailVerificationMessage(String token, String to, String path) {
         try {
             String verificationLink = buildVerificationLink(token, path);
@@ -27,7 +29,7 @@ public class MailService {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
 
-            helper.setFrom("noreply");
+            helper.setFrom("noreply@yzarr.com");
             helper.setTo(to);
             helper.setSubject("Email verification");
             helper.setText(html, true);
