@@ -10,7 +10,7 @@ import yzarr.auth.pipeline.AuthPipeline;
 import yzarr.auth.pipeline.AuthPipelineFactory;
 
 @Service
-public class UserService {
+public class AuthOrchestrator {
 
     private final AuthProperties props;
     private final AuthPipeline registerPipeline;
@@ -21,7 +21,7 @@ public class UserService {
     private final AuthPipeline check2faPipeline;
     private final AuthPipeline logoutPipeline;
 
-    public UserService(AuthPipelineFactory factory, AuthProperties props) {
+    public AuthOrchestrator(AuthPipelineFactory factory, AuthProperties props) {
         registerPipeline = factory.createRegister();
         loginPipeline = factory.createLogin();
         refreshPipeline = factory.createRefresh();
