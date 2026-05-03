@@ -22,11 +22,16 @@ public class SecurityConfiguration {
     private final Filter filter;
     private final UserDetailsService userDetailsService;
     private final BCryptPasswordEncoder encoder;
+    private final CustomOidcUserService customOidcUserService;
+    private final OauthSuccessHandler oauthSuccessHandler;
 
-    public SecurityConfiguration(UserDetailsService userDetailsService, Filter filter, BCryptPasswordEncoder encoder) {
+    public SecurityConfiguration(UserDetailsService userDetailsService, Filter filter, BCryptPasswordEncoder encoder,
+            CustomOidcUserService customOidcUserService, OauthSuccessHandler oauthSuccessHandler) {
         this.userDetailsService = userDetailsService;
         this.filter = filter;
         this.encoder = encoder;
+        this.customOidcUserService = customOidcUserService;
+        this.oauthSuccessHandler = oauthSuccessHandler;
     }
 
     @Bean
@@ -34,9 +39,11 @@ public class SecurityConfiguration {
         return http
                 .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable) // .csrf(csrf -> csrf.disable())
+                .oauth2Login(oauth -> oauth
+                        .userInfoEndpoint(u -> u.oidcUserService(customOidcUserService))
+                        .successHandler(oauthSuccessHandler))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/register", "/auth/login", "/auth/refresh", "/auth/verify/email",
-                                "/auth/verify/2fa", "/auth/verify/2fa/status", "/auth/refresh/logout")
+                        .requestMatchers("/auth/**")
                         .permitAll()
                         .anyRequest().authenticated())
 

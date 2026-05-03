@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import yzarr.auth.AuthProperties;
 import yzarr.auth.model.User;
+import yzarr.auth.model.enums.AuthProvider;
 
 @Data
 @Builder
@@ -19,6 +20,7 @@ public class AuthContext {
     private AuthProperties props;
     private HttpServletResponse response;
     private HttpServletRequest request;
+    private AuthProvider provider;
     @Builder.Default
     private boolean stop = false;
     @Builder.Default
@@ -28,6 +30,4 @@ public class AuthContext {
         this.stop = true;
         return this;
     }
-    // private boolean isEmailVerified;
-    // private boolean is2FAVerified;
 }

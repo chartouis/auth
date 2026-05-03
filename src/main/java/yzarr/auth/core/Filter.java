@@ -42,11 +42,7 @@ public class Filter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return path.equals("/auth/register")
-                || path.equals("/auth/login")
-                || path.equals("/auth/refresh")
-                || path.equals("/auth/refresh/logout")
-                || path.startsWith("/auth/verify");
+        return path.startsWith("/auth") || path.startsWith("/login");
     }
 
     @Override
