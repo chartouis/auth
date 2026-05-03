@@ -14,10 +14,11 @@ import yzarr.auth.repo.UserRepo;
 public class UserService {
 
     private final UserRepo userRepo;
-    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+    private final BCryptPasswordEncoder encoder;
 
-    public UserService(UserRepo userRepo) {
+    public UserService(UserRepo userRepo, BCryptPasswordEncoder encoder) {
         this.userRepo = userRepo;
+        this.encoder = encoder;
     }
 
     public User findUser(String email) {

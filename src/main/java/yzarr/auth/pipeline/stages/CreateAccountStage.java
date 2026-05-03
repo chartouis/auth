@@ -15,8 +15,13 @@ import yzarr.auth.repo.UserRepo;
 @Slf4j
 public class CreateAccountStage implements AuthStage {
 
-    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+    private final BCryptPasswordEncoder encoder;
     private final UserRepo repo;
+
+    public CreateAccountStage(UserRepo repo, BCryptPasswordEncoder encoder) {
+        this.encoder = encoder;
+        this.repo = repo;
+    }
 
     @Override
     public AuthContext process(AuthContext context) {
@@ -32,10 +37,6 @@ public class CreateAccountStage implements AuthStage {
         log.info("Created User : {}", user.getUsername());
 
         return context;
-    }
-
-    public CreateAccountStage(UserRepo repo) {
-        this.repo = repo;
     }
 
     private boolean exists(String email) {

@@ -21,10 +21,12 @@ public class SecurityConfiguration {
 
     private final Filter filter;
     private final UserDetailsService userDetailsService;
+    private final BCryptPasswordEncoder encoder;
 
-    public SecurityConfiguration(UserDetailsService userDetailsService, Filter filter) {
+    public SecurityConfiguration(UserDetailsService userDetailsService, Filter filter, BCryptPasswordEncoder encoder) {
         this.userDetailsService = userDetailsService;
         this.filter = filter;
+        this.encoder = encoder;
     }
 
     @Bean
@@ -47,7 +49,7 @@ public class SecurityConfiguration {
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
-        provider.setPasswordEncoder(new BCryptPasswordEncoder(12));
+        provider.setPasswordEncoder(encoder);
         return provider;
     }
 
