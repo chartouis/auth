@@ -6,16 +6,14 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Component;
 
+import lombok.RequiredArgsConstructor;
 import yzarr.auth.model.enums.AuthProvider;
 import yzarr.auth.service.UserService;
 
 @Component
+@RequiredArgsConstructor
 public class CustomOidcUserService extends OidcUserService {
     private final UserService userService;
-
-    public CustomOidcUserService(UserService userService) {
-        this.userService = userService;
-    }
 
     @Override
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {

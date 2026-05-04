@@ -2,6 +2,7 @@ package yzarr.auth.pipeline.stages;
 
 import org.springframework.stereotype.Component;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import yzarr.auth.model.AuthException;
 import yzarr.auth.model.User;
@@ -16,14 +17,9 @@ import yzarr.auth.service.TokenService;
 //Checks token, if exists then switches emailVerified of user to true
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class VerifyEmailVerificationTokenStage implements AuthStage {
     private final TokenService tokenService;
-
-    public VerifyEmailVerificationTokenStage(TokenService tokenService, UserRepo userRepo) {
-        this.tokenService = tokenService;
-        this.userRepo = userRepo;
-    }
-
     private final UserRepo userRepo;
 
     @Override

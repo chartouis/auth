@@ -2,6 +2,7 @@ package yzarr.auth.pipeline.stages;
 
 import org.springframework.stereotype.Component;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import yzarr.auth.model.TokenException;
 import yzarr.auth.model.VerificationToken;
@@ -14,14 +15,10 @@ import yzarr.auth.service.TokenService;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class ConsumeChallengeStage implements AuthStage {
     private final CookieService cookieService;
     private final TokenService tokenService;
-
-    public ConsumeChallengeStage(CookieService cookieService, TokenService tokenService) {
-        this.cookieService = cookieService;
-        this.tokenService = tokenService;
-    }
 
     @Override
     public AuthContext process(AuthContext context) {

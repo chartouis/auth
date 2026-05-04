@@ -10,14 +10,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class MailService {
     private final JavaMailSender javaMailSender;
-
-    public MailService(JavaMailSender javaMailSender) {
-        this.javaMailSender = javaMailSender;
-    }
 
     @Async("mailTaskExecutor")
     public void sendEmailVerificationMessage(String token, String to, String path) {

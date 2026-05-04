@@ -5,18 +5,16 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import yzarr.auth.service.AuthOrchestrator;
 
 @RestController
 @RequestMapping("/auth/verify/2fa")
 @ConditionalOnProperty(name = "yzarr.auth.two-fa")
+@RequiredArgsConstructor
 public class TwoFactorVerificationController {
 
     private final AuthOrchestrator authOrchestrator;
-
-    public TwoFactorVerificationController(AuthOrchestrator authOrchestrator) {
-        this.authOrchestrator = authOrchestrator;
-    }
 
     @GetMapping
     public void verify2FA(@RequestParam("token") String token) {

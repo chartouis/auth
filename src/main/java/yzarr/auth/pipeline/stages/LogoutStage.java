@@ -2,6 +2,7 @@ package yzarr.auth.pipeline.stages;
 
 import org.springframework.stereotype.Component;
 
+import lombok.RequiredArgsConstructor;
 import yzarr.auth.model.RefreshToken;
 import yzarr.auth.model.enums.RevokeReason;
 import yzarr.auth.model.enums.TokenType;
@@ -10,14 +11,10 @@ import yzarr.auth.service.CookieService;
 import yzarr.auth.service.TokenService;
 
 @Component
+@RequiredArgsConstructor
 public class LogoutStage implements AuthStage {
     private final TokenService tokenService;
     private final CookieService cookieService;
-
-    public LogoutStage(TokenService tokenService, CookieService cookieService) {
-        this.tokenService = tokenService;
-        this.cookieService = cookieService;
-    }
 
     @Override
     public AuthContext process(AuthContext context) {

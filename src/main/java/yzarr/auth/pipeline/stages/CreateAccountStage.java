@@ -2,6 +2,7 @@ package yzarr.auth.pipeline.stages;
 
 import org.springframework.stereotype.Component;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import yzarr.auth.pipeline.AuthContext;
 import yzarr.auth.service.UserService;
@@ -9,13 +10,10 @@ import yzarr.auth.service.UserService;
 /* Creates a user, given the email and password are okay */
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class CreateAccountStage implements AuthStage {
 
     private final UserService userService;
-
-    public CreateAccountStage(UserService userService) {
-        this.userService = userService;
-    }
 
     @Override
     public AuthContext process(AuthContext context) {

@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import yzarr.auth.model.requests.LoginRequest;
 import yzarr.auth.model.requests.RegisterRequest;
@@ -16,13 +17,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RestController
 @RequestMapping("/auth")
 @Slf4j
+@RequiredArgsConstructor
 public class MainController {
 
     private final AuthOrchestrator authOrchestrator;
-
-    public MainController(AuthOrchestrator authOrchestrator) {
-        this.authOrchestrator = authOrchestrator;
-    }
 
     @PostMapping("/register")
     public void register(@RequestBody RegisterRequest req) {
