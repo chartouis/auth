@@ -2,6 +2,7 @@ package yzarr.auth.pipeline;
 
 import org.springframework.stereotype.Component;
 
+import lombok.RequiredArgsConstructor;
 import yzarr.auth.AuthProperties;
 import yzarr.auth.pipeline.stages.AccessTokenIssueStage;
 import yzarr.auth.pipeline.stages.AuthenticationStage;
@@ -12,17 +13,20 @@ import yzarr.auth.pipeline.stages.LogoutStage;
 import yzarr.auth.pipeline.stages.RefreshTokenIssueStage;
 import yzarr.auth.pipeline.stages.RefreshTokenRotationStage;
 import yzarr.auth.pipeline.stages.SetChallengeAndSend2FAstage;
-import yzarr.auth.pipeline.stages.ValidEmailPasswordStage;
+import yzarr.auth.pipeline.stages.ValidEmailStage;
+import yzarr.auth.pipeline.stages.ValidPasswordStage;
 import yzarr.auth.pipeline.stages.VerifyChallengeStage;
 import yzarr.auth.pipeline.stages.VerifyEmailVerificationTokenStage;
 import yzarr.auth.pipeline.stages.VerifyRefreshTokenStage;
 
 @Component
+@RequiredArgsConstructor
 public class AuthPipelineFactory {
 
     private final AuthProperties authProperties;
     private final CreateAccountStage createAccountStage;
-    private final ValidEmailPasswordStage validEmailPasswordStage;
+    private final ValidPasswordStage validPasswordStage;
+    private final ValidEmailStage validEmailStage;
     private final AuthenticationStage authenticationStage;
     private final RefreshTokenIssueStage refreshTokenIssueStage;
     private final VerifyRefreshTokenStage verifyRefreshTokenStage;
@@ -35,30 +39,6 @@ public class AuthPipelineFactory {
     private final RefreshTokenRotationStage refreshTokenRotationStage;
     private final LogoutStage logoutStage;
 
-    public AuthPipelineFactory(AuthProperties authProperties, CreateAccountStage createAccountStage,
-            ValidEmailPasswordStage validEmailPasswordStage, AuthenticationStage authenticationStage,
-            RefreshTokenIssueStage refreshTokenIssueStage, VerifyRefreshTokenStage verifyRefreshTokenStage,
-            AccessTokenIssueStage accessTokenIssueStage, EmailVerificationStage emailVerificationStage,
-            VerifyEmailVerificationTokenStage verifyEmailVerificationTokenStage,
-            ConsumeChallengeStage consumeChallengeStage, SetChallengeAndSend2FAstage setChallengeAndSend2FAstage,
-            VerifyChallengeStage verifyChallengeStage, RefreshTokenRotationStage refreshTokenRotationStage,
-            LogoutStage logoutStage) {
-        this.authProperties = authProperties;
-        this.createAccountStage = createAccountStage;
-        this.validEmailPasswordStage = validEmailPasswordStage;
-        this.authenticationStage = authenticationStage;
-        this.refreshTokenIssueStage = refreshTokenIssueStage;
-        this.verifyRefreshTokenStage = verifyRefreshTokenStage;
-        this.accessTokenIssueStage = accessTokenIssueStage;
-        this.emailVerificationStage = emailVerificationStage;
-        this.verifyEmailVerificationTokenStage = verifyEmailVerificationTokenStage;
-        this.consumeChallengeStage = consumeChallengeStage;
-        this.setChallengeAndSend2FAstage = setChallengeAndSend2FAstage;
-        this.verifyChallengeStage = verifyChallengeStage;
-        this.refreshTokenRotationStage = refreshTokenRotationStage;
-        this.logoutStage = logoutStage;
-    }
-
     /**
      * Register Pipeline. Needs these params in context to work, then creates a user
      * 
@@ -68,7 +48,8 @@ public class AuthPipelineFactory {
      */
     public AuthPipeline createRegister() {
         AuthPipeline pipeline = new AuthPipeline()
-                .add(validEmailPasswordStage)
+                .add(validEmailStage)
+                .add(validPasswordStage)
                 .add(createAccountStage);
         if (authProperties.isEmailVerification()) {
             pipeline.add(emailVerificationStage);
@@ -88,7 +69,8 @@ public class AuthPipelineFactory {
      */
     public AuthPipeline createLogin() {
         AuthPipeline pipeline = new AuthPipeline()
-                .add(validEmailPasswordStage)
+                .add(validEmailStage)
+                .add(validPasswordStage)
                 .add(authenticationStage);
         if (authProperties.isTwoFa()) {
             pipeline.add(setChallengeAndSend2FAstage);
