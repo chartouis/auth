@@ -15,6 +15,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import yzarr.auth.AuthProperties;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
@@ -24,24 +26,33 @@ public class SecurityConfiguration {
     private final BCryptPasswordEncoder encoder;
     private final CustomOidcUserService customOidcUserService;
     private final OauthSuccessHandler oauthSuccessHandler;
+    private final AuthProperties props;
 
     public SecurityConfiguration(UserDetailsService userDetailsService, Filter filter, BCryptPasswordEncoder encoder,
-            CustomOidcUserService customOidcUserService, OauthSuccessHandler oauthSuccessHandler) {
+            CustomOidcUserService customOidcUserService, OauthSuccessHandler oauthSuccessHandler,
+            AuthProperties props) {
         this.userDetailsService = userDetailsService;
         this.filter = filter;
         this.encoder = encoder;
         this.customOidcUserService = customOidcUserService;
         this.oauthSuccessHandler = oauthSuccessHandler;
+        this.props = props;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
+
+        if (!props.isEnableAuth()) {
+            http
+                    .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                    .csrf(csrf -> csrf.disable());
+            return http.build();
+        }
+
+        http
                 .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable) // .csrf(csrf -> csrf.disable())
-                .oauth2Login(oauth -> oauth
-                        .userInfoEndpoint(u -> u.oidcUserService(customOidcUserService))
-                        .successHandler(oauthSuccessHandler))
+
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**")
                         .permitAll()
@@ -49,8 +60,14 @@ public class SecurityConfiguration {
 
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)
-                .build();
+                .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
+
+        if (props.isOauth()) {
+            http.oauth2Login(oauth -> oauth
+                    .userInfoEndpoint(u -> u.oidcUserService(customOidcUserService))
+                    .successHandler(oauthSuccessHandler));
+        }
+        return http.build();
     }
 
     @Bean

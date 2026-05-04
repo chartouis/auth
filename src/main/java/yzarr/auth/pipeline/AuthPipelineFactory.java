@@ -67,10 +67,13 @@ public class AuthPipelineFactory {
      * @param props
      */
     public AuthPipeline createRegister() {
-        return new AuthPipeline()
+        AuthPipeline pipeline = new AuthPipeline()
                 .add(validEmailPasswordStage)
-                .add(createAccountStage)
-                .add(emailVerificationStage);
+                .add(createAccountStage);
+        if (authProperties.isEmailVerification()) {
+            pipeline.add(emailVerificationStage);
+        }
+        return pipeline;
     }
 
     /**
@@ -90,7 +93,9 @@ public class AuthPipelineFactory {
         if (authProperties.isTwoFa()) {
             pipeline.add(setChallengeAndSend2FAstage);
         } else {
-            pipeline.add(refreshTokenIssueStage);
+            pipeline.add(refreshTokenIssueStage)
+                    .add(accessTokenIssueStage);
+
         }
         return pipeline;
     }

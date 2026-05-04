@@ -23,7 +23,7 @@ public class CustomOidcUserService extends OidcUserService {
         if (!userService.exists(oidcUser.getEmail())) {
             userService.createUserOauth(
                     oidcUser.getEmail(),
-                    oidcUser.getName(),
+                    oidcUser.getFullName(),
                     AuthProvider.valueOf(userRequest
                             .getClientRegistration()
                             .getRegistrationId()

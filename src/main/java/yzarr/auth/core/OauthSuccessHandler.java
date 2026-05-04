@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import yzarr.auth.AuthProperties;
 import yzarr.auth.model.User;
 import yzarr.auth.pipeline.AuthContext;
 import yzarr.auth.pipeline.AuthPipeline;
@@ -22,12 +23,14 @@ public class OauthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private final UserService userService;
     private final RefreshTokenIssueStage refreshTokenIssueStage;
     private final AccessTokenIssueStage accessTokenIssueStage;
+    private final AuthProperties props;
 
     public OauthSuccessHandler(UserService userService, AccessTokenIssueStage accessTokenIssueStage,
-            RefreshTokenIssueStage refreshTokenIssueStage) {
+            RefreshTokenIssueStage refreshTokenIssueStage, AuthProperties props) {
         this.userService = userService;
         this.refreshTokenIssueStage = refreshTokenIssueStage;
         this.accessTokenIssueStage = accessTokenIssueStage;
+        this.props = props;
     }
 
     @Override
@@ -39,8 +42,7 @@ public class OauthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
         pipeline.execute(AuthContext.builder().user(user).response(response).build());
         clearAuthenticationAttributes(request);
 
-        getRedirectStrategy().sendRedirect(request, response,
-                "https://httpbin.org/get?cooks=" + response.getHeaders("Set-Cookie"));
+        getRedirectStrategy().sendRedirect(request, response, props.getOauthRedirectUrl());
     }
 
 }

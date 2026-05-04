@@ -37,6 +37,7 @@ public class AuthProperties {
 
     // Must be set in application.properties
     private String frontendUrl = "";
+    private String oauthRedirectUrl = frontendUrl;
 
     private short minPasswordLength = 8;
 

@@ -1,4 +1,4 @@
-package yzarr.auth.core;
+package yzarr.auth.core.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,17 +12,15 @@ import yzarr.auth.service.AuthOrchestrator;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/auth")
 @Slf4j
-public class Controller {
+public class MainController {
 
     private final AuthOrchestrator authOrchestrator;
 
-    public Controller(AuthOrchestrator authOrchestrator) {
+    public MainController(AuthOrchestrator authOrchestrator) {
         this.authOrchestrator = authOrchestrator;
     }
 
@@ -44,21 +42,6 @@ public class Controller {
     @PostMapping("/refresh/logout")
     public void logout(HttpServletResponse response, HttpServletRequest request) {
         authOrchestrator.logout(response, request);
-    }
-
-    @GetMapping("/verify/email")
-    public void verifyEmail(@RequestParam("token") String token) {
-        authOrchestrator.verifyEmail(token);
-    }
-
-    @GetMapping("/verify/2fa")
-    public void verify2FA(@RequestParam("token") String token) {
-        authOrchestrator.verify2fa(token);
-    }
-
-    @PostMapping("/verify/2fa/status")
-    public void check2faStatus(HttpServletRequest request, HttpServletResponse response) {
-        authOrchestrator.check2faStatus(request, response);
     }
 
 }
