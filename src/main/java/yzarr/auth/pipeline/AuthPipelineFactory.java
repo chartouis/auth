@@ -13,6 +13,7 @@ import yzarr.auth.pipeline.stages.EmailVerificationStage;
 import yzarr.auth.pipeline.stages.LogoutStage;
 import yzarr.auth.pipeline.stages.RefreshTokenIssueStage;
 import yzarr.auth.pipeline.stages.RefreshTokenRotationStage;
+import yzarr.auth.pipeline.stages.RevokeRefreshTokensStage;
 import yzarr.auth.pipeline.stages.SendPasswordResetTokenStage;
 import yzarr.auth.pipeline.stages.SetChallengeAndSend2FAstage;
 import yzarr.auth.pipeline.stages.ValidEmailStage;
@@ -44,6 +45,7 @@ public class AuthPipelineFactory {
     private final SendPasswordResetTokenStage sendPasswordResetTokenStage;
     private final VerifyPasswordResetTokenStage verifyPasswordResetTokenStage;
     private final ChangePasswordStage changePasswordStage;
+    private final RevokeRefreshTokensStage revokeRefreshTokensStage;
 
     /**
      * Register Pipeline. Needs these params in context to work, then creates a user
@@ -126,7 +128,8 @@ public class AuthPipelineFactory {
     public AuthPipeline createPasswordResetConfirm() {
         return new AuthPipeline()
                 .add(verifyPasswordResetTokenStage)
-                .add(changePasswordStage);
+                .add(changePasswordStage)
+                .add(revokeRefreshTokensStage);
     }
 
 }
