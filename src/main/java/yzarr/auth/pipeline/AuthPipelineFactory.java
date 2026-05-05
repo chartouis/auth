@@ -132,4 +132,14 @@ public class AuthPipelineFactory {
                 .add(revokeRefreshTokensStage);
     }
 
+    public AuthPipeline createChangePassword() {
+        return new AuthPipeline()
+                .add(verifyRefreshTokenStage)
+                .add(validEmailStage)
+                .add(validPasswordStage)
+                .add(authenticationStage)
+                .add(changePasswordStage)
+                .add(revokeRefreshTokensStage);
+    }
+
 }

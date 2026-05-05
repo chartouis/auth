@@ -22,6 +22,7 @@ public class AuthOrchestrator {
     private final AuthPipeline logoutPipeline;
     private final AuthPipeline requestPasswordReset;
     private final AuthPipeline confirmPasswordReset;
+    private final AuthPipeline changePassword;
 
     public AuthOrchestrator(AuthPipelineFactory factory, AuthProperties props) {
         registerPipeline = factory.createRegister();
@@ -33,6 +34,7 @@ public class AuthOrchestrator {
         logoutPipeline = factory.createLogout();
         requestPasswordReset = factory.createResetPasswordRequest();
         confirmPasswordReset = factory.createPasswordResetConfirm();
+        changePassword = factory.createChangePassword();
         this.props = props;
     }
 
@@ -107,5 +109,16 @@ public class AuthOrchestrator {
                 .newPassword(newPassword)
                 .props(props)
                 .build());
+    }
+
+    public void changePassword(String email, String password, String newPassword, HttpServletRequest request) {
+        changePassword.execute(AuthContext.builder()
+                .request(request)
+                .newPassword(newPassword)
+                .email(email)
+                .password(newPassword)
+                .props(props)
+                .build());
+
     }
 }
