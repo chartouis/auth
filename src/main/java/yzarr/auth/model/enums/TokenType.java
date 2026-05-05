@@ -6,4 +6,5 @@ public enum TokenType {
     REFRESH_TOKEN,
     ACCESS_TOKEN,
     CHALLENGE,
+    PASSWORD_RESET
 }

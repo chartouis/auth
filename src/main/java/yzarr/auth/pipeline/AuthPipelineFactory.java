@@ -6,17 +6,20 @@ import lombok.RequiredArgsConstructor;
 import yzarr.auth.AuthProperties;
 import yzarr.auth.pipeline.stages.AccessTokenIssueStage;
 import yzarr.auth.pipeline.stages.AuthenticationStage;
+import yzarr.auth.pipeline.stages.ChangePasswordStage;
 import yzarr.auth.pipeline.stages.ConsumeChallengeStage;
 import yzarr.auth.pipeline.stages.CreateAccountStage;
 import yzarr.auth.pipeline.stages.EmailVerificationStage;
 import yzarr.auth.pipeline.stages.LogoutStage;
 import yzarr.auth.pipeline.stages.RefreshTokenIssueStage;
 import yzarr.auth.pipeline.stages.RefreshTokenRotationStage;
+import yzarr.auth.pipeline.stages.SendPasswordResetTokenStage;
 import yzarr.auth.pipeline.stages.SetChallengeAndSend2FAstage;
 import yzarr.auth.pipeline.stages.ValidEmailStage;
 import yzarr.auth.pipeline.stages.ValidPasswordStage;
 import yzarr.auth.pipeline.stages.VerifyChallengeStage;
 import yzarr.auth.pipeline.stages.VerifyEmailVerificationTokenStage;
+import yzarr.auth.pipeline.stages.VerifyPasswordResetTokenStage;
 import yzarr.auth.pipeline.stages.VerifyRefreshTokenStage;
 
 @Component
@@ -38,6 +41,9 @@ public class AuthPipelineFactory {
     private final VerifyChallengeStage verifyChallengeStage;
     private final RefreshTokenRotationStage refreshTokenRotationStage;
     private final LogoutStage logoutStage;
+    private final SendPasswordResetTokenStage sendPasswordResetTokenStage;
+    private final VerifyPasswordResetTokenStage verifyPasswordResetTokenStage;
+    private final ChangePasswordStage changePasswordStage;
 
     /**
      * Register Pipeline. Needs these params in context to work, then creates a user
@@ -109,6 +115,18 @@ public class AuthPipelineFactory {
     public AuthPipeline createLogout() {
         return new AuthPipeline()
                 .add(logoutStage);
+    }
+
+    public AuthPipeline createResetPasswordRequest() {
+        return new AuthPipeline()
+                .add(validEmailStage)
+                .add(sendPasswordResetTokenStage);
+    }
+
+    public AuthPipeline createPasswordResetConfirm() {
+        return new AuthPipeline()
+                .add(verifyPasswordResetTokenStage)
+                .add(changePasswordStage);
     }
 
 }

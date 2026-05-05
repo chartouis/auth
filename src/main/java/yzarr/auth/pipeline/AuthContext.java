@@ -15,6 +15,7 @@ import yzarr.auth.model.enums.AuthProvider;
 public class AuthContext {
     private String email;
     private String password;
+    private String newPassword;
     private User user;
     private String token;
     private AuthProperties props;

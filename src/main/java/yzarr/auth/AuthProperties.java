@@ -19,6 +19,7 @@ public class AuthProperties {
     private Long shortAbsoluteExpiryMs = 1000L * 60L * 60L; // 1 hour
     private Long accessTokenExpiryMs = 1000L * 60L * 15L; // 15 minutes
     private Long emailVerificationTokenExpiryMs = 1000L * 60L * 60L;
+    private Long passwordResetTokenExpiryMs = 1000L * 60L * 5L;
     private Long challengeTokenExpiryMs = 1000L * 600L;
     private Long twoFactorTokenExpiryMs = 1000L * 600L;
 

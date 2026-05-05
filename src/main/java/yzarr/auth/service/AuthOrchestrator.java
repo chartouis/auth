@@ -20,6 +20,8 @@ public class AuthOrchestrator {
     private final AuthPipeline verify2faPipeline;
     private final AuthPipeline check2faPipeline;
     private final AuthPipeline logoutPipeline;
+    private final AuthPipeline requestPasswordReset;
+    private final AuthPipeline confirmPasswordReset;
 
     public AuthOrchestrator(AuthPipelineFactory factory, AuthProperties props) {
         registerPipeline = factory.createRegister();
@@ -29,6 +31,8 @@ public class AuthOrchestrator {
         verify2faPipeline = factory.createVerify2fa();
         check2faPipeline = factory.createCheck2faStatus();
         logoutPipeline = factory.createLogout();
+        requestPasswordReset = factory.createResetPasswordRequest();
+        confirmPasswordReset = factory.createPasswordResetConfirm();
         this.props = props;
     }
 
@@ -86,6 +90,22 @@ public class AuthOrchestrator {
         logoutPipeline.execute(AuthContext.builder()
                 .response(response)
                 .request(request)
+                .props(props)
+                .build());
+    }
+
+    public void requestPasswordReset(String email) {
+        requestPasswordReset.execute(AuthContext.builder()
+                .email(email)
+                .props(props)
+                .build());
+    }
+
+    public void confirmPasswordReset(String token, String newPassword) {
+        confirmPasswordReset.execute(AuthContext.builder()
+                .token(token)
+                .newPassword(newPassword)
+                .props(props)
                 .build());
     }
 }

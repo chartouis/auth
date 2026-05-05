@@ -87,4 +87,9 @@ public class UserService {
         }
     }
 
+    public User changePassword(User user, String newPassword) {
+        user.setPasswordHash(encoder.encode(newPassword));
+        return userRepo.save(user);
+    }
+
 }

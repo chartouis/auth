@@ -17,7 +17,7 @@ public class ValidPasswordStage implements AuthStage {
         return context;
     }
 
-    private void validatePassword(String password, int minLength) {
+    public static void validatePassword(String password, int minLength) {
         if (password == null) {
             throw new AuthException(ErrorCode.INVALID_CREDENTIALS);
         }

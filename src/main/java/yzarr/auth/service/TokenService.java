@@ -122,6 +122,14 @@ public class TokenService {
         return token;
     }
 
+    private String generateToken(User user, TokenType type, Instant expiresAt, String metadata) {
+        String tokenString = generateRandomString();
+        VerificationToken token = new VerificationToken(hash(tokenString), user, expiresAt, type);
+        token.setMetadata(metadata);
+        verificationTokenRepo.save(token);
+        return tokenString;
+    }
+
     public String generateRefreshToken(User user, boolean rememberMe) {
         Instant expiresAt = Instant.now().plusMillis(
                 rememberMe ? props.getRefreshTokenExpiryMs() : props.getShortAbsoluteExpiryMs());
@@ -135,14 +143,6 @@ public class TokenService {
         return tokenString;
     }
 
-    private String generateToken(User user, TokenType type, Instant expiresAt, String metadata) {
-        String tokenString = generateRandomString();
-        VerificationToken token = new VerificationToken(hash(tokenString), user, expiresAt, type);
-        token.setMetadata(metadata);
-        verificationTokenRepo.save(token);
-        return tokenString;
-    }
-
     public String generateEmailVerificationToken(User user) {
         return generateToken(user, TokenType.EMAIL_VERIFICATION,
                 Instant.now().plusMillis(props.getEmailVerificationTokenExpiryMs()), null);
@@ -153,17 +153,22 @@ public class TokenService {
                 Instant.now().plusMillis(props.getTwoFactorTokenExpiryMs()), hash(challenge));
     }
 
+    public String generatePasswordResetToken(User user) {
+        return generateToken(user, TokenType.PASSWORD_RESET,
+                Instant.now().plusMillis(props.getPasswordResetTokenExpiryMs()), null);
+    }
+
+    public String generateChallengeToken(User user, boolean rememberMe) {
+        return generateToken(user, TokenType.CHALLENGE,
+                Instant.now().plusMillis(props.getChallengeTokenExpiryMs()), Boolean.toString(rememberMe));
+    }
+
     public User getUserByToken(String tokenString, TokenType type) {
         return switch (type) {
             case REFRESH_TOKEN -> findValidRefreshToken(tokenString).getUser();
             case TWO_FACTOR, EMAIL_VERIFICATION, CHALLENGE -> findValidVerificationToken(tokenString, type).getUser();
             default -> throw new AuthException(ErrorCode.UNEXPECTED_ERROR);
         };
-    }
-
-    public String generateChallengeToken(User user, boolean rememberMe) {
-        return generateToken(user, TokenType.CHALLENGE,
-                Instant.now().plusMillis(props.getChallengeTokenExpiryMs()), Boolean.toString(rememberMe));
     }
 
     public VerificationToken save(VerificationToken vt) {
