@@ -17,6 +17,7 @@ public enum ErrorCode {
     PENDING(202, "Try again later"),
     EXPIRED(400, "Token is expired"),
     TOKEN_ALREADY_SENT(409, "Token has already been sent to this email"),
+    TOKEN_ROTATION_COOLDOWN(429, "Token rotation cooldown active. Please wait before requesting a new refresh token."),
     UNEXPECTED_ERROR(500, "This error means something bad happened on the backend"),
     TODO(500, "TODO CODE");
 
