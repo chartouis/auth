@@ -39,7 +39,7 @@ public class CheckTokenCooldownStage implements AuthStage {
 
     public static void isBeforeCooldown(VerificationToken token, Long cooldownms) {
         if (token.getIssuedAt().isAfter(Instant.now().minusMillis(cooldownms))) {
-            throw new AuthException(ErrorCode.TOKEN_ALREADY_SENT);
+            throw new AuthException(ErrorCode.EMAIL_ALREADY_SENT);
         }
     }
 
