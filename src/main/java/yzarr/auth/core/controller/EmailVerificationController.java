@@ -10,26 +10,31 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
-@RequestMapping("/auth/verify")
+@RequestMapping("/auth")
 @ConditionalOnProperty(name = "yzarr.auth.email-verification")
 @RequiredArgsConstructor
 public class EmailVerificationController {
 
     private final AuthOrchestrator authOrchestrator;
 
-    @GetMapping("/email")
+    @GetMapping("/verify/email")
     public void verifyEmail(@RequestParam("token") String token) {
         authOrchestrator.verifyEmail(token);
     }
 
-    @PostMapping("/reset/request")
+    @PostMapping("/password/reset/request")
     public void requestPasswordReset(@RequestParam("email") String email) {
         authOrchestrator.requestPasswordReset(email);
     }
 
-    @PostMapping("/reset/confirm")
-    public void postMethodName(@RequestBody PasswordResetRequest req) {
+    @PostMapping("/password/reset/confirm")
+    public void confirmPasswordReset(@RequestBody PasswordResetRequest req) {
         authOrchestrator.confirmPasswordReset(req.getToken(), req.getNewPassword());
+    }
+
+    @PostMapping("/verify/email")
+    public void sendEmailVerification(@RequestParam("email") String email) {
+        authOrchestrator.sendEmailVerification(email);
     }
 
 }

@@ -23,6 +23,7 @@ public class AuthOrchestrator {
     private final AuthPipeline requestPasswordReset;
     private final AuthPipeline confirmPasswordReset;
     private final AuthPipeline changePassword;
+    private final AuthPipeline sendEmailVerification;
 
     public AuthOrchestrator(AuthPipelineFactory factory, AuthProperties props) {
         registerPipeline = factory.createRegister();
@@ -35,6 +36,7 @@ public class AuthOrchestrator {
         requestPasswordReset = factory.createResetPasswordRequest();
         confirmPasswordReset = factory.createPasswordResetConfirm();
         changePassword = factory.createChangePassword();
+        sendEmailVerification = factory.createSendEmailVerification();
         this.props = props;
     }
 
@@ -62,6 +64,13 @@ public class AuthOrchestrator {
         refreshPipeline.execute(AuthContext.builder()
                 .request(request)
                 .response(response)
+                .props(props)
+                .build());
+    }
+
+    public void sendEmailVerification(String email) {
+        sendEmailVerification.execute(AuthContext.builder()
+                .email(email)
                 .props(props)
                 .build());
     }

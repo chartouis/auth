@@ -113,6 +113,13 @@ public class AuthPipelineFactory {
         return pipeline;
     }
 
+    public AuthPipeline createSendEmailVerification() {
+        return new AuthPipeline()
+                .add(validEmailStage)
+                .add(checkTokenCooldownStage)
+                .add(emailVerificationStage);
+    }
+
     public AuthPipeline createVerifyEmail() {
         return new AuthPipeline().add(verifyEmailVerificationTokenStage);
     }
