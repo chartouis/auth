@@ -22,6 +22,7 @@ public class AuthProperties {
     private Long passwordResetTokenExpiryMs = 1000L * 60L * 5L;
     private Long challengeTokenExpiryMs = 1000L * 600L;
     private Long twoFactorTokenExpiryMs = 1000L * 600L;
+    private Long tokenSendCooldownMs = 1000L * 60L;
 
     private boolean enableAuth = true;
     private boolean refreshTokenRotation = true;

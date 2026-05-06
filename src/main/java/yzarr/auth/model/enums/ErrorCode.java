@@ -16,6 +16,7 @@ public enum ErrorCode {
     EMAIL_IS_ALREADY_VERIFIED(409, "Email is already verified"),
     PENDING(202, "Try again later"),
     EXPIRED(400, "Token is expired"),
+    TOKEN_ALREADY_SENT(409, "Token has already been sent to this email"),
     UNEXPECTED_ERROR(500, "This error means something bad happened on the backend"),
     TODO(500, "TODO CODE");
 

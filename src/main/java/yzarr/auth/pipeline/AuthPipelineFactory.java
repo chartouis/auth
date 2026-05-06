@@ -4,9 +4,11 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 import yzarr.auth.AuthProperties;
+import yzarr.auth.model.enums.TokenType;
 import yzarr.auth.pipeline.stages.AccessTokenIssueStage;
 import yzarr.auth.pipeline.stages.AuthenticationStage;
 import yzarr.auth.pipeline.stages.ChangePasswordStage;
+import yzarr.auth.pipeline.stages.CheckTokenCooldownStage;
 import yzarr.auth.pipeline.stages.ConsumeChallengeStage;
 import yzarr.auth.pipeline.stages.CreateAccountStage;
 import yzarr.auth.pipeline.stages.EmailVerificationStage;
@@ -46,6 +48,7 @@ public class AuthPipelineFactory {
     private final VerifyPasswordResetTokenStage verifyPasswordResetTokenStage;
     private final ChangePasswordStage changePasswordStage;
     private final RevokeRefreshTokensStage revokeRefreshTokensStage;
+    private final CheckTokenCooldownStage checkTokenCooldownStage;
 
     /**
      * Register Pipeline. Needs these params in context to work, then creates a user
@@ -60,7 +63,9 @@ public class AuthPipelineFactory {
                 .add(validPasswordStage)
                 .add(createAccountStage);
         if (authProperties.isEmailVerification()) {
-            pipeline.add(emailVerificationStage);
+            pipeline
+                    .add(checkTokenCooldownStage.TokenType(TokenType.EMAIL_VERIFICATION))
+                    .add(emailVerificationStage);
         }
         return pipeline;
     }
@@ -80,8 +85,16 @@ public class AuthPipelineFactory {
                 .add(validEmailStage)
                 .add(validPasswordStage)
                 .add(authenticationStage);
+
+        if (authProperties.isEmailVerification()) {
+            pipeline
+                    .add(checkTokenCooldownStage.TokenType(TokenType.EMAIL_VERIFICATION))
+                    .add(emailVerificationStage);
+        }
         if (authProperties.isTwoFa()) {
-            pipeline.add(setChallengeAndSend2FAstage);
+            pipeline
+                    .add(checkTokenCooldownStage.TokenType(TokenType.TWO_FACTOR))
+                    .add(setChallengeAndSend2FAstage);
         } else {
             pipeline.add(refreshTokenIssueStage)
                     .add(accessTokenIssueStage);
@@ -122,6 +135,7 @@ public class AuthPipelineFactory {
     public AuthPipeline createResetPasswordRequest() {
         return new AuthPipeline()
                 .add(validEmailStage)
+                .add(checkTokenCooldownStage.TokenType(TokenType.PASSWORD_RESET))
                 .add(sendPasswordResetTokenStage);
     }
 
