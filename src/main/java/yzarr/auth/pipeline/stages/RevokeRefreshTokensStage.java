@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 import yzarr.auth.model.RefreshToken;
+import yzarr.auth.model.enums.RefreshTokenStatus;
 import yzarr.auth.model.enums.RevokeReason;
 import yzarr.auth.pipeline.AuthContext;
 import yzarr.auth.repo.RefreshTokenRepo;
@@ -19,7 +20,7 @@ public class RevokeRefreshTokensStage implements AuthStage {
 
     @Override
     public AuthContext process(AuthContext context) {
-        List<RefreshToken> list = refreshTokenRepo.findByUser(context.getUser());
+        List<RefreshToken> list = refreshTokenRepo.findByUserAndStatus(context.getUser(), RefreshTokenStatus.ACTIVE);
         for (RefreshToken token : list) {
             token.revoke(reason);
             refreshTokenRepo.save(token);

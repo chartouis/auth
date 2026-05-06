@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import yzarr.auth.model.RefreshToken;
 import yzarr.auth.model.User;
+import yzarr.auth.model.enums.RefreshTokenStatus;
 
 import java.util.List;
 
@@ -15,5 +16,5 @@ import java.util.List;
 public interface RefreshTokenRepo extends JpaRepository<RefreshToken, UUID> {
     Optional<RefreshToken> findByTokenHash(String hash);
 
-    List<RefreshToken> findByUser(User user);
+    List<RefreshToken> findByUserAndStatus(User user, RefreshTokenStatus status);
 }
