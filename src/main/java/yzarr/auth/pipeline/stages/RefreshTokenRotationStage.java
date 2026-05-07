@@ -1,5 +1,7 @@
 package yzarr.auth.pipeline.stages;
 
+import java.time.Instant;
+
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
@@ -21,7 +23,7 @@ public class RefreshTokenRotationStage implements AuthStage {
     public AuthContext process(AuthContext context) {
         RefreshToken token = tokenService.findValidRefreshToken(context.getToken());
         if (token.getIssuedAt()
-                .isBefore(java.time.Instant.now().minusMillis(context.getProps().getRefreshCooldownMs()))) {
+                .isAfter(Instant.now().minusMillis(context.getProps().getRefreshCooldownMs()))) {
             throw new AuthException(ErrorCode.TOKEN_ROTATION_COOLDOWN);
         }
         token.revoke(RevokeReason.ROTATED);
