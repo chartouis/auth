@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import yzarr.auth.AuthProperties;
 import yzarr.auth.model.User;
 import yzarr.auth.pipeline.AuthContext;
@@ -19,19 +20,12 @@ import yzarr.auth.pipeline.stages.RefreshTokenIssueStage;
 import yzarr.auth.service.UserService;
 
 @Component
+@RequiredArgsConstructor
 public class OauthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private final UserService userService;
     private final RefreshTokenIssueStage refreshTokenIssueStage;
     private final AccessTokenIssueStage accessTokenIssueStage;
     private final AuthProperties props;
-
-    public OauthSuccessHandler(UserService userService, AccessTokenIssueStage accessTokenIssueStage,
-            RefreshTokenIssueStage refreshTokenIssueStage, AuthProperties props) {
-        this.userService = userService;
-        this.refreshTokenIssueStage = refreshTokenIssueStage;
-        this.accessTokenIssueStage = accessTokenIssueStage;
-        this.props = props;
-    }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -39,7 +33,7 @@ public class OauthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
         OidcUser oidcUser = (OidcUser) authentication.getPrincipal();
         User user = userService.findUser(oidcUser.getEmail());
         AuthPipeline pipeline = new AuthPipeline().add(refreshTokenIssueStage).add(accessTokenIssueStage);
-        pipeline.execute(AuthContext.builder().user(user).response(response).build());
+        pipeline.execute(AuthContext.builder().props(props).user(user).response(response).build());
         clearAuthenticationAttributes(request);
 
         getRedirectStrategy().sendRedirect(request, response, props.getOauthRedirectUrl());
