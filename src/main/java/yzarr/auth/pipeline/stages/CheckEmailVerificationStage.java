@@ -1,9 +1,12 @@
 package yzarr.auth.pipeline.stages;
 
+import org.springframework.stereotype.Component;
+
 import yzarr.auth.model.AuthException;
 import yzarr.auth.model.enums.ErrorCode;
 import yzarr.auth.pipeline.AuthContext;
 
+@Component
 public class CheckEmailVerificationStage implements AuthStage {
 
     @Override
