@@ -21,8 +21,8 @@ public class RevokeRefreshTokensStage implements AuthStage {
         List<RefreshToken> list = refreshTokenRepo.findByUserAndStatus(context.getUser(), RefreshTokenStatus.ACTIVE);
         for (RefreshToken token : list) {
             token.revoke(context.getRevokeReason());
-            refreshTokenRepo.save(token);
         }
+        refreshTokenRepo.saveAll(list);
         return context;
     }
 }
