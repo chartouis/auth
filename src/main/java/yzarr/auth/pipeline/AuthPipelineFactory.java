@@ -4,14 +4,14 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 import yzarr.auth.AuthProperties;
-import yzarr.auth.model.enums.TokenType;
 import yzarr.auth.pipeline.stages.AccessTokenIssueStage;
 import yzarr.auth.pipeline.stages.AuthenticationStage;
 import yzarr.auth.pipeline.stages.ChangePasswordStage;
+import yzarr.auth.pipeline.stages.CheckEmailVerificationStage;
 import yzarr.auth.pipeline.stages.CheckTokenCooldownStage;
 import yzarr.auth.pipeline.stages.ConsumeChallengeStage;
 import yzarr.auth.pipeline.stages.CreateAccountStage;
-import yzarr.auth.pipeline.stages.EmailVerificationStage;
+import yzarr.auth.pipeline.stages.SendEmailVerificationStage;
 import yzarr.auth.pipeline.stages.LogoutStage;
 import yzarr.auth.pipeline.stages.RefreshTokenIssueStage;
 import yzarr.auth.pipeline.stages.RefreshTokenRotationStage;
@@ -37,7 +37,7 @@ public class AuthPipelineFactory {
     private final RefreshTokenIssueStage refreshTokenIssueStage;
     private final VerifyRefreshTokenStage verifyRefreshTokenStage;
     private final AccessTokenIssueStage accessTokenIssueStage;
-    private final EmailVerificationStage emailVerificationStage;
+    private final SendEmailVerificationStage sendEmailVerificationStage;
     private final VerifyEmailVerificationTokenStage verifyEmailVerificationTokenStage;
     private final ConsumeChallengeStage consumeChallengeStage;
     private final SetChallengeAndSend2FAstage setChallengeAndSend2FAstage;
@@ -49,6 +49,7 @@ public class AuthPipelineFactory {
     private final ChangePasswordStage changePasswordStage;
     private final RevokeRefreshTokensStage revokeRefreshTokensStage;
     private final CheckTokenCooldownStage checkTokenCooldownStage;
+    private final CheckEmailVerificationStage checkEmailVerificationStage;
 
     /**
      * Register Pipeline. Needs these params in context to work, then creates a user
@@ -62,11 +63,6 @@ public class AuthPipelineFactory {
                 .add(validEmailStage)
                 .add(validPasswordStage)
                 .add(createAccountStage);
-        if (authProperties.isEmailVerification()) {
-            pipeline
-                    .add(checkTokenCooldownStage.TokenType(TokenType.EMAIL_VERIFICATION))
-                    .add(emailVerificationStage);
-        }
         return pipeline;
     }
 
@@ -88,12 +84,11 @@ public class AuthPipelineFactory {
 
         if (authProperties.isEmailVerification()) {
             pipeline
-                    .add(checkTokenCooldownStage.TokenType(TokenType.EMAIL_VERIFICATION))
-                    .add(emailVerificationStage);
+                    .add(checkEmailVerificationStage);
         }
         if (authProperties.isTwoFa()) {
             pipeline
-                    .add(checkTokenCooldownStage.TokenType(TokenType.TWO_FACTOR))
+                    .add(checkTokenCooldownStage)
                     .add(setChallengeAndSend2FAstage);
         } else {
             pipeline.add(refreshTokenIssueStage)
@@ -117,7 +112,7 @@ public class AuthPipelineFactory {
         return new AuthPipeline()
                 .add(validEmailStage)
                 .add(checkTokenCooldownStage)
-                .add(emailVerificationStage);
+                .add(sendEmailVerificationStage);
     }
 
     public AuthPipeline createVerifyEmail() {
@@ -142,7 +137,7 @@ public class AuthPipelineFactory {
     public AuthPipeline createResetPasswordRequest() {
         return new AuthPipeline()
                 .add(validEmailStage)
-                .add(checkTokenCooldownStage.TokenType(TokenType.PASSWORD_RESET))
+                .add(checkTokenCooldownStage)
                 .add(sendPasswordResetTokenStage);
     }
 

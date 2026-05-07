@@ -8,6 +8,8 @@ import lombok.Data;
 import yzarr.auth.AuthProperties;
 import yzarr.auth.model.User;
 import yzarr.auth.model.enums.AuthProvider;
+import yzarr.auth.model.enums.RevokeReason;
+import yzarr.auth.model.enums.TokenType;
 
 @Data
 @Builder
@@ -22,6 +24,8 @@ public class AuthContext {
     private HttpServletResponse response;
     private HttpServletRequest request;
     private AuthProvider provider;
+    private TokenType tokenType;
+    private RevokeReason revokeReason;
     @Builder.Default
     private boolean stop = false;
     @Builder.Default

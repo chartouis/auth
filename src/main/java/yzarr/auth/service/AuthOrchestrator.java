@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import yzarr.auth.AuthProperties;
+import yzarr.auth.model.enums.RevokeReason;
+import yzarr.auth.model.enums.TokenType;
 import yzarr.auth.pipeline.AuthContext;
 import yzarr.auth.pipeline.AuthPipeline;
 import yzarr.auth.pipeline.AuthPipelineFactory;
@@ -57,6 +59,7 @@ public class AuthOrchestrator {
                 .rememberMe(rememberMe)
                 .request(request)
                 .response(response)
+                .tokenType(TokenType.TWO_FACTOR)
                 .build());
     }
 
@@ -71,6 +74,7 @@ public class AuthOrchestrator {
     public void sendEmailVerification(String email) {
         sendEmailVerification.execute(AuthContext.builder()
                 .email(email)
+                .tokenType(TokenType.EMAIL_VERIFICATION)
                 .props(props)
                 .build());
     }
@@ -109,6 +113,7 @@ public class AuthOrchestrator {
         requestPasswordReset.execute(AuthContext.builder()
                 .email(email)
                 .props(props)
+                .tokenType(TokenType.PASSWORD_RESET)
                 .build());
     }
 
@@ -117,6 +122,7 @@ public class AuthOrchestrator {
                 .token(token)
                 .newPassword(newPassword)
                 .props(props)
+                .revokeReason(RevokeReason.PASSWORD_CHANGED)
                 .build());
     }
 
@@ -125,8 +131,9 @@ public class AuthOrchestrator {
                 .request(request)
                 .newPassword(newPassword)
                 .email(email)
-                .password(newPassword)
+                .password(password)
                 .props(props)
+                .revokeReason(RevokeReason.PASSWORD_CHANGED)
                 .build());
 
     }

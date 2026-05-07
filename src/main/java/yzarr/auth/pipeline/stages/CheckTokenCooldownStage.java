@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import yzarr.auth.model.AuthException;
 import yzarr.auth.model.VerificationToken;
 import yzarr.auth.model.enums.ErrorCode;
-import yzarr.auth.model.enums.TokenType;
 import yzarr.auth.pipeline.AuthContext;
 import yzarr.auth.repo.VerificationTokenRepo;
 import yzarr.auth.service.UserService;
@@ -18,7 +17,6 @@ import yzarr.auth.service.UserService;
 @RequiredArgsConstructor
 public class CheckTokenCooldownStage implements AuthStage {
 
-    private TokenType tokenType;
     private final UserService userService;
     private final VerificationTokenRepo verificationTokenRepo;
 
@@ -28,7 +26,7 @@ public class CheckTokenCooldownStage implements AuthStage {
             context.setUser(userService.findUser(context.getEmail()));
         }
         Optional<VerificationToken> otoken = verificationTokenRepo
-                .findTopByUserAndTypeOrderByIssuedAtDesc(context.getUser(), tokenType);
+                .findTopByUserAndTypeOrderByIssuedAtDesc(context.getUser(), context.getTokenType());
         if (otoken.isPresent()) {
             VerificationToken token = otoken.get();
             isBeforeCooldown(token, context.getProps().getTokenSendCooldownMs());
@@ -41,11 +39,6 @@ public class CheckTokenCooldownStage implements AuthStage {
         if (token.getIssuedAt().isAfter(Instant.now().minusMillis(cooldownms))) {
             throw new AuthException(ErrorCode.EMAIL_ALREADY_SENT);
         }
-    }
-
-    public CheckTokenCooldownStage TokenType(TokenType tokenType) {
-        this.tokenType = tokenType;
-        return this;
     }
 
 }
