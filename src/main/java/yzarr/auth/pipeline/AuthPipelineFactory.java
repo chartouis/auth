@@ -128,6 +128,7 @@ public class AuthPipelineFactory {
     public AuthPipeline createCheck2faStatus() {
         return new AuthPipeline()
                 .add(consumeChallengeStage)
+                .add(accessTokenIssueStage)
                 .add(refreshTokenIssueStage);
     }
 
