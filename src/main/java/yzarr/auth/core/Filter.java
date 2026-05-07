@@ -55,7 +55,6 @@ public class Filter extends OncePerRequestFilter {
             String token = cookieService.getAccessToken(request);
 
             String userId = jwtService.extractSubject(token);
-            jwtService.validateToken(token, userId);
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(userId);
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
