@@ -7,6 +7,7 @@ import yzarr.auth.AuthProperties;
 import yzarr.auth.pipeline.stages.AccessTokenIssueStage;
 import yzarr.auth.pipeline.stages.AuthenticationStage;
 import yzarr.auth.pipeline.stages.ChangePasswordStage;
+import yzarr.auth.pipeline.stages.CheckCredsAndCompare;
 import yzarr.auth.pipeline.stages.CheckEmailVerificationStage;
 import yzarr.auth.pipeline.stages.CheckTokenCooldownStage;
 import yzarr.auth.pipeline.stages.ConsumeChallengeStage;
@@ -50,6 +51,7 @@ public class AuthPipelineFactory {
     private final RevokeRefreshTokensStage revokeRefreshTokensStage;
     private final CheckTokenCooldownStage checkTokenCooldownStage;
     private final CheckEmailVerificationStage checkEmailVerificationStage;
+    private final CheckCredsAndCompare checkCredsAndCompare;
 
     /**
      * Register Pipeline. Needs these params in context to work, then creates a user
@@ -153,7 +155,7 @@ public class AuthPipelineFactory {
                 .add(verifyRefreshTokenStage)
                 .add(validEmailStage)
                 .add(validPasswordStage)
-                .add(authenticationStage)
+                .add(checkCredsAndCompare)
                 .add(changePasswordStage)
                 .add(revokeRefreshTokensStage);
     }
