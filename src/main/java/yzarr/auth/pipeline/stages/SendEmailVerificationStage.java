@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import yzarr.auth.model.enums.TokenType;
 import yzarr.auth.pipeline.AuthContext;
 import yzarr.auth.service.MailService;
 import yzarr.auth.service.TokenService;
@@ -19,7 +20,7 @@ public class SendEmailVerificationStage implements AuthStage {
     @Override
     public AuthContext process(AuthContext context) {
         String token = tokenService.generateEmailVerificationToken(context.getUser());
-        mailService.sendEmailVerificationMessage(token, context.getEmail(), "/auth/verify/email");
+        mailService.sendTokenEmail(TokenType.EMAIL_VERIFICATION, token, context.getEmail(), "/auth/verify/email");
         return context;
     }
 

@@ -11,14 +11,22 @@ import org.springframework.web.util.UriComponentsBuilder;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import yzarr.auth.model.enums.TokenType;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MailService {
     private final JavaMailSender javaMailSender;
 
     @Async("mailTaskExecutor")
     public void sendEmailVerificationMessage(String token, String to, String path) {
+        sendTokenEmail(TokenType.EMAIL_VERIFICATION, token, to, path);
+    }
+
+    @Async("mailTaskExecutor")
+    public void sendTokenEmail(TokenType tokenType, String token, String to, String path) {
         try {
             String verificationLink = buildVerificationLink(token, path);
 
@@ -33,8 +41,10 @@ public class MailService {
             helper.setText(html, true);
 
             javaMailSender.send(message);
+            log.info("Mail sent: to={} tokenType={}", to, tokenType);
 
         } catch (MessagingException e) {
+            log.warn("Mail send failed: to={} tokenType={}", to, tokenType, e);
             throw new RuntimeException(e);
         }
     }

@@ -3,6 +3,7 @@ package yzarr.auth.pipeline.stages;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
+import yzarr.auth.model.enums.TokenType;
 import yzarr.auth.pipeline.AuthContext;
 import yzarr.auth.service.CookieService;
 import yzarr.auth.service.MailService;
@@ -30,7 +31,7 @@ public class SetChallengeAndSend2FAstage implements AuthStage {
         String challenge = tokenService.generateChallengeToken(context.getUser(), context.isRememberMe());
         cookieService.setChallengeCookie(challenge, context.getResponse());
         String twofa = tokenService.generate2FAtoken(context.getUser(), challenge);
-        mailService.sendEmailVerificationMessage(twofa, context.getEmail(), "/auth/verify/2fa");
+        mailService.sendTokenEmail(TokenType.TWO_FACTOR, twofa, context.getEmail(), "/auth/verify/2fa");
         return context;
     }
 

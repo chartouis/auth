@@ -3,6 +3,7 @@ package yzarr.auth.pipeline.stages;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
+import yzarr.auth.model.enums.TokenType;
 import yzarr.auth.pipeline.AuthContext;
 import yzarr.auth.service.MailService;
 import yzarr.auth.service.TokenService;
@@ -19,7 +20,7 @@ public class SendPasswordResetTokenStage implements AuthStage {
     public AuthContext process(AuthContext context) {
         context.setUser(userService.findUser(context.getEmail()));
         String token = tokenService.generatePasswordResetToken(context.getUser());
-        mailService.sendEmailVerificationMessage(token, context.getEmail(), "/auth/verify/password-reset");
+        mailService.sendTokenEmail(TokenType.PASSWORD_RESET, token, context.getEmail(), "/auth/verify/password-reset");
         return context;
     }
 

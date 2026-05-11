@@ -20,7 +20,10 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Component
+@Slf4j
 public class Filter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
@@ -62,9 +65,14 @@ public class Filter extends OncePerRequestFilter {
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authToken);
 
+            log.debug("Successful auth for userId={}", userId);
             filterChain.doFilter(request, response);
 
         } catch (TokenException ex) {
+            log.warn("TokenException in filter: type={} reason={}", ex.getType(), ex.getReason());
+            exceptionResolver.resolveException(request, response, null, ex);
+        } catch (Exception ex) {
+            log.error("Unexpected exception in auth filter", ex);
             exceptionResolver.resolveException(request, response, null, ex);
         }
     }

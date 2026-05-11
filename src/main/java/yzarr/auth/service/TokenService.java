@@ -80,6 +80,12 @@ public class TokenService {
                 .findByTokenHash(tokenHash)
                 .orElseThrow(() -> new TokenException(type, TokenFailureReason.INVALID));
 
+        validateToken(token, type);
+
+        return token;
+    }
+
+    public static void validateToken(VerificationToken token, TokenType type) {
         if (token.getExpiresAt().isBefore(Instant.now())) {
             throw new TokenException(type, TokenFailureReason.EXPIRED);
         }
@@ -91,8 +97,6 @@ public class TokenService {
         if (token.getStatus() == VerificationTokenStatus.CONSUMED) {
             throw new TokenException(type, TokenFailureReason.ALREADY_CONSUMED);
         }
-
-        return token;
     }
 
     /**
@@ -110,12 +114,14 @@ public class TokenService {
                 .orElseThrow(() -> new TokenException(TokenType.REFRESH_TOKEN, TokenFailureReason.MISSING));
 
         if (token.getAbsoluteExpiry().isBefore(Instant.now()) || token.getExpiresAt().isBefore(Instant.now())) {
+            log.warn("Expired refresh token encountered: userId={}", token.getUser().getId());
             token.revoke(RevokeReason.EXPIRED);
             refreshTokenRepo.save(token);
             throw new TokenException(TokenType.REFRESH_TOKEN, TokenFailureReason.EXPIRED);
         }
 
         if (token.getStatus() == RefreshTokenStatus.REVOKED) {
+            log.warn("Revoked refresh token encountered: userId={}", token.getUser().getId());
             throw new TokenException(TokenType.REFRESH_TOKEN, TokenFailureReason.ALREADY_REVOKED);
         }
 

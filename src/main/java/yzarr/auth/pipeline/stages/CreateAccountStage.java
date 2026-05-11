@@ -19,7 +19,7 @@ public class CreateAccountStage implements AuthStage {
     public AuthContext process(AuthContext context) {
 
         context.setUser(userService.createUser(context.getEmail(), context.getPassword()));
-        log.info("Created User : {}", context.getUser().getUsername());
+        log.info("User registered: email={}", context.getEmail());
 
         return context;
     }

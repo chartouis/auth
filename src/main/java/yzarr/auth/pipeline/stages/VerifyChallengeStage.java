@@ -26,6 +26,8 @@ public class VerifyChallengeStage implements AuthStage {
         VerificationToken challenge = tokenService.findValidVerificationToken(twofa.getMetadata(), TokenType.CHALLENGE,
                 true);
         if (twofa.getStatus() != VerificationTokenStatus.PENDING) {
+            log.warn("2FA token not pending (possible replay): status={} userId={}",
+                    twofa.getStatus(), twofa.getUser().getId());
             throw new TokenException(TokenType.TWO_FACTOR, TokenFailureReason.INVALID);
         }
 
