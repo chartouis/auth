@@ -1,12 +1,10 @@
 package yzarr.auth;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 import lombok.Data;
 
 @ConfigurationProperties(prefix = "yzarr.auth")
-@Component
 @Data
 public class AuthProperties {
 
@@ -47,4 +45,8 @@ public class AuthProperties {
     // SMTP credentials
     private String appUsername = "default@gmail.com";
     private String appPassword = "default";
+
+    private String smtpHost = "smtp.gmail.com";
+    private int smtpPort = 587;
+    private boolean mailDebug = false;
 }

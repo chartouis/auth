@@ -1,5 +1,6 @@
 package yzarr.auth.core;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -46,8 +47,8 @@ public class Config {
     @Bean
     public JavaMailSender getJavaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost("smtp.gmail.com");
-        mailSender.setPort(587);
+        mailSender.setHost(props.getSmtpHost());
+        mailSender.setPort(props.getSmtpPort());
 
         mailSender.setUsername(props.getAppUsername());
         mailSender.setPassword(props.getAppPassword());
@@ -56,7 +57,7 @@ public class Config {
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.debug", "true");
+        props.put("mail.debug", String.valueOf(this.props.isMailDebug()));
 
         return mailSender;
     }
@@ -76,6 +77,13 @@ public class Config {
     @Bean
     public BCryptPasswordEncoder encoder() {
         return new BCryptPasswordEncoder(12);
+    }
+
+    @Bean
+    public FilterRegistrationBean<Filter> filterRegistration(Filter filter) {
+        FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false); // prevent Spring Boot from registering it as standalone
+        return registration;
     }
 
 }
